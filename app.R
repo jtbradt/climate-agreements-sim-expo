@@ -183,12 +183,12 @@ abatement_costs <- function(selected_country, reduction_year, reduction_rate, co
   abatement_cost[, mac := cost_param1 * cumulative_abatement + cost_param2 * cumulative_abatement^2 ]
   
   # Calculate actual abatement:
-  emissions_BAU <- emissions_pathway(selected_country, 2100, 0.0)
   emissions_policy <- emissions_pathway(selected_country, reduction_year, reduction_rate)
-  abatement_cost[, abated := c(0.0, diff(emissions_BAU$emissions - emissions_policy$emissions))]
+  abatement_cost[, abated := c(0.0, diff(emissions_policy$emissions))]
+  abatement_cost[, abated := ifelse(Year >= reduction_year, abated, 0.0)]
   
   # Calculate abatement costs ($B):
-  abatement_cost[, abatement_cost := mac * abated]
+  abatement_cost[, abatement_cost := -mac * abated]
   
   return(abatement_cost)
   
