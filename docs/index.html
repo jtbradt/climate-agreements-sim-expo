@@ -12,511 +12,597 @@
       --border: #dee2e6;
       --text: #212529;
       --text-muted: #6c757d;
-      --primary: #2563eb;
       --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
       --shadow-lg: 0 4px 12px rgba(0,0,0,0.1);
       --radius: 10px;
     }
-
     * { margin: 0; padding: 0; box-sizing: border-box; }
-
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.5;
-      min-height: 100vh;
+      background: var(--bg); color: var(--text); line-height: 1.5;
     }
-
     header {
       background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
-      color: white;
-      padding: 1.25rem 2rem;
-      box-shadow: var(--shadow-lg);
+      color: white; padding: 1rem 2rem; box-shadow: var(--shadow-lg);
+      display: flex; align-items: center; justify-content: space-between;
     }
-
-    header h1 {
-      font-size: 1.5rem;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-    }
-
-    header p {
-      font-size: 0.85rem;
-      opacity: 0.85;
-      margin-top: 0.15rem;
-    }
+    header h1 { font-size: 1.4rem; font-weight: 700; letter-spacing: -0.02em; }
+    header p { font-size: 0.82rem; opacity: 0.85; margin-top: 0.1rem; }
 
     .app-container {
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 1.25rem;
-      display: grid;
-      gap: 1.25rem;
-      grid-template-columns: 1fr 1fr;
+      max-width: 1440px; margin: 0 auto; padding: 1rem;
+      display: flex; flex-direction: column; gap: 0.75rem;
     }
-
     .card {
-      background: var(--card-bg);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      border: 1px solid var(--border);
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
+      background: var(--card-bg); border-radius: var(--radius);
+      box-shadow: var(--shadow); border: 1px solid var(--border);
+      overflow: hidden; display: flex; flex-direction: column;
     }
-
     .card-header {
-      padding: 0.75rem 1rem;
-      font-weight: 600;
-      font-size: 0.9rem;
-      border-bottom: 1px solid var(--border);
-      background: #f8fafc;
-      color: var(--text);
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
+      padding: 0.5rem 1rem; font-weight: 600; font-size: 0.85rem;
+      border-bottom: 1px solid var(--border); background: #f8fafc;
+      display: flex; align-items: center; gap: 0.5rem;
     }
+    .card-body { padding: 0.75rem; flex: 1; display: flex; align-items: center; justify-content: center; }
+    .chart-container { position: relative; width: 100%; height: 340px; }
 
-    .card-body {
-      padding: 1rem;
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+    .chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+    /* Headline metrics */
+    .metrics-bar {
+      display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;
     }
-
-    .chart-container {
-      position: relative;
-      width: 100%;
-      height: 280px;
+    .metric {
+      background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px;
+      padding: 0.5rem 1.25rem; text-align: center; box-shadow: var(--shadow);
+      min-width: 160px;
     }
-
-    .inputs-row {
-      grid-column: 1 / -1;
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 1.25rem;
+    .metric-value {
+      font-size: 1.4rem; font-weight: 700; font-variant-numeric: tabular-nums;
+      line-height: 1.2;
     }
+    .metric-label { font-size: 0.7rem; color: var(--text-muted); font-weight: 500; margin-top: 0.1rem; }
+    .metric-value.warn { color: #dc2626; }
+    .metric-value.ok { color: #16a34a; }
 
-    .bottom-row {
-      grid-column: 1 / -1;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1.25rem;
+    /* Tabs */
+    .tab-bar { display: flex; gap: 0; border-bottom: 2px solid var(--border); }
+    .tab-btn {
+      padding: 0.55rem 1.5rem; font-size: 0.85rem; font-weight: 600;
+      background: none; border: none; cursor: pointer;
+      color: var(--text-muted); border-bottom: 2px solid transparent;
+      margin-bottom: -2px; transition: color 0.15s, border-color 0.15s;
     }
+    .tab-btn:hover { color: var(--text); }
+    .tab-btn.active { color: #2563eb; border-bottom-color: #2563eb; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: flex; flex-direction: column; gap: 1rem; }
 
-    .country-inputs {
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-      width: 100%;
+    /* Policy grid */
+    .policy-header-row {
+      display: flex; align-items: center; justify-content: space-between;
     }
-
-    .country-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      display: inline-block;
-      flex-shrink: 0;
+    .policy-grid {
+      display: grid; grid-template-columns: repeat(6, 1fr); gap: 0.75rem; width: 100%;
     }
-
-    .input-group {
-      display: flex;
-      flex-direction: column;
-      gap: 0.25rem;
+    .country-col { display: flex; flex-direction: column; gap: 0.5rem; }
+    .country-header {
+      font-weight: 600; font-size: 0.8rem;
+      display: flex; align-items: center; gap: 0.4rem;
+      padding-bottom: 0.35rem; border-bottom: 2px solid var(--border);
     }
-
-    .input-group label {
-      font-size: 0.78rem;
-      color: var(--text-muted);
-      font-weight: 500;
-    }
-
-    .input-row {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .input-row input[type="range"] {
-      flex: 1;
-      accent-color: var(--primary);
-      cursor: pointer;
-    }
-
+    .country-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .input-group { display: flex; flex-direction: column; gap: 0.15rem; }
+    .input-group label { font-size: 0.7rem; color: var(--text-muted); font-weight: 500; }
+    .input-row { display: flex; align-items: center; gap: 0.35rem; }
+    .input-row input[type="range"] { flex: 1; accent-color: #2563eb; cursor: pointer; height: 18px; }
     .input-value {
-      min-width: 48px;
-      text-align: right;
-      font-size: 0.82rem;
-      font-weight: 600;
-      font-variant-numeric: tabular-nums;
-      color: var(--text);
+      min-width: 40px; text-align: right; font-size: 0.75rem;
+      font-weight: 600; font-variant-numeric: tabular-nums;
     }
+    .transfer-input {
+      width: 100%; padding: 0.3rem 0.4rem; font-size: 0.8rem;
+      border: 1px solid var(--border); border-radius: 6px;
+      font-variant-numeric: tabular-nums; text-align: right;
+    }
+    .transfer-input:focus { outline: 2px solid #2563eb; border-color: transparent; }
+    .transfer-balance {
+      margin-top: 0.5rem; padding: 0.4rem 0.75rem;
+      border-radius: 6px; font-size: 0.8rem; font-weight: 600; text-align: center;
+    }
+    .transfer-balance.balanced { background: #dcfce7; color: #166534; }
+    .transfer-balance.imbalanced { background: #fef2f2; color: #991b1b; }
 
-    @media (max-width: 900px) {
-      .app-container { grid-template-columns: 1fr; }
-      .inputs-row { grid-template-columns: 1fr; }
-      .bottom-row { grid-template-columns: 1fr; }
+    .reset-btn {
+      padding: 0.35rem 0.9rem; font-size: 0.78rem; font-weight: 600;
+      background: #f1f5f9; border: 1px solid var(--border); border-radius: 6px;
+      cursor: pointer; color: var(--text-muted); transition: all 0.15s;
+    }
+    .reset-btn:hover { background: #e2e8f0; color: var(--text); }
+
+    /* Summary table */
+    .summary-table {
+      width: 100%; border-collapse: collapse; font-size: 0.85rem;
+      font-variant-numeric: tabular-nums;
+    }
+    .summary-table th {
+      text-align: left; padding: 0.6rem 0.75rem; font-weight: 600;
+      border-bottom: 2px solid var(--border); font-size: 0.78rem;
+      color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em;
+    }
+    .summary-table td { padding: 0.55rem 0.75rem; border-bottom: 1px solid #f0f0f0; }
+    .summary-table tbody tr:last-child td { border-bottom: 2px solid var(--border); font-weight: 600; }
+    .summary-table .country-cell { display: flex; align-items: center; gap: 0.4rem; font-weight: 500; }
+    .summary-table .num { text-align: right; }
+    .summary-table .positive { color: #dc2626; }
+    .summary-table .negative { color: #16a34a; }
+
+    @media (max-width: 1100px) { .policy-grid { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 700px) {
+      .chart-row { grid-template-columns: 1fr; }
+      .policy-grid { grid-template-columns: repeat(2, 1fr); }
+      .metrics-bar { flex-direction: column; align-items: center; }
     }
   </style>
 </head>
 <body>
   <header>
-    <h1>Climate Agreements Simulation</h1>
-    <p>Explore how emission reduction policies affect global temperature, economic damages, and abatement costs</p>
+    <div>
+      <h1>Climate Agreements Simulation</h1>
+      <p>Simulate international climate negotiations across 6 country groups</p>
+    </div>
   </header>
 
   <div class="app-container">
-    <!-- Top row: Emissions + Temperature -->
+    <!-- Policy Inputs -->
     <div class="card">
-      <div class="card-header">GHG Emissions Pathways</div>
-      <div class="card-body"><div class="chart-container"><canvas id="emissionsChart"></canvas></div></div>
-    </div>
-    <div class="card">
-      <div class="card-header">Temperature Change</div>
-      <div class="card-body"><div class="chart-container"><canvas id="tempChart"></canvas></div></div>
+      <div class="card-header">
+        <div class="policy-header-row" style="width:100%">
+          <span>Policy Settings</span>
+          <button class="reset-btn" id="resetBtn">Reset All</button>
+        </div>
+      </div>
+      <div class="card-body" style="flex-direction:column; align-items:stretch;">
+        <div class="policy-grid" id="policyGrid"></div>
+        <div class="transfer-balance balanced" id="transferBalance">Net Transfer Balance: $0 B/yr (balanced)</div>
+      </div>
     </div>
 
-    <!-- Middle row: Policy Inputs -->
-    <div class="inputs-row">
-      <div class="card">
-        <div class="card-header"><span class="country-dot" style="background:#2563eb"></span> Developed</div>
-        <div class="card-body">
-          <div class="country-inputs">
-            <div class="input-group">
-              <label>Reduction Start Year</label>
-              <div class="input-row">
-                <input type="range" id="developed_year" min="2025" max="2100" value="2100" step="1">
-                <span class="input-value" id="developed_year_val">2100</span>
-              </div>
-            </div>
-            <div class="input-group">
-              <label>Annual Reduction Rate (%)</label>
-              <div class="input-row">
-                <input type="range" id="developed_rate" min="0" max="20" value="0" step="0.5">
-                <span class="input-value" id="developed_rate_val">0%</span>
-              </div>
-            </div>
-          </div>
-        </div>
+    <!-- Headline metrics -->
+    <div class="metrics-bar">
+      <div class="metric">
+        <div class="metric-value" id="metricTemp">--</div>
+        <div class="metric-label">Temperature in 2100 (&deg;C)</div>
       </div>
-      <div class="card">
-        <div class="card-header"><span class="country-dot" style="background:#e11d48"></span> Developing A</div>
-        <div class="card-body">
-          <div class="country-inputs">
-            <div class="input-group">
-              <label>Reduction Start Year</label>
-              <div class="input-row">
-                <input type="range" id="developingA_year" min="2025" max="2100" value="2100" step="1">
-                <span class="input-value" id="developingA_year_val">2100</span>
-              </div>
-            </div>
-            <div class="input-group">
-              <label>Annual Reduction Rate (%)</label>
-              <div class="input-row">
-                <input type="range" id="developingA_rate" min="0" max="20" value="0" step="0.5">
-                <span class="input-value" id="developingA_rate_val">0%</span>
-              </div>
-            </div>
-          </div>
-        </div>
+      <div class="metric">
+        <div class="metric-value" id="metricEmissions">--</div>
+        <div class="metric-label">Total Emissions in 2100 (Gt CO&#8322;e)</div>
       </div>
-      <div class="card">
-        <div class="card-header"><span class="country-dot" style="background:#16a34a"></span> Developing B</div>
-        <div class="card-body">
-          <div class="country-inputs">
-            <div class="input-group">
-              <label>Reduction Start Year</label>
-              <div class="input-row">
-                <input type="range" id="developingB_year" min="2025" max="2100" value="2100" step="1">
-                <span class="input-value" id="developingB_year_val">2100</span>
-              </div>
-            </div>
-            <div class="input-group">
-              <label>Annual Reduction Rate (%)</label>
-              <div class="input-row">
-                <input type="range" id="developingB_rate" min="0" max="20" value="0" step="0.5">
-                <span class="input-value" id="developingB_rate_val">0%</span>
-              </div>
-            </div>
-          </div>
+      <div class="metric">
+        <div class="metric-value" id="metricAbatement">--</div>
+        <div class="metric-label">Global Abatement Cost ($B cumul.)</div>
+      </div>
+    </div>
+
+    <!-- Tab bar -->
+    <div class="tab-bar">
+      <button class="tab-btn active" data-tab="emissions">Emissions &amp; Temperature</button>
+      <button class="tab-btn" data-tab="costs">Costs &amp; Damages</button>
+      <button class="tab-btn" data-tab="summary">Financial Summary</button>
+    </div>
+
+    <!-- Tab 1: Emissions & Temperature -->
+    <div class="tab-panel active" id="tab-emissions">
+      <div class="chart-row">
+        <div class="card">
+          <div class="card-header">GHG Emissions Pathways</div>
+          <div class="card-body"><div class="chart-container"><canvas id="emissionsChart"></canvas></div></div>
+        </div>
+        <div class="card">
+          <div class="card-header">Global Temperature Change</div>
+          <div class="card-body"><div class="chart-container"><canvas id="tempChart"></canvas></div></div>
         </div>
       </div>
     </div>
 
-    <!-- Bottom row: Damages + Abatement -->
-    <div class="bottom-row">
-      <div class="card">
-        <div class="card-header">Climate Damages from Post-2000 Warming</div>
-        <div class="card-body"><div class="chart-container"><canvas id="damagesChart"></canvas></div></div>
+    <!-- Tab 2: Costs & Damages -->
+    <div class="tab-panel" id="tab-costs">
+      <div class="chart-row">
+        <div class="card">
+          <div class="card-header">Climate Damages from Post-2010 Warming</div>
+          <div class="card-body"><div class="chart-container"><canvas id="damagesChart"></canvas></div></div>
+        </div>
+        <div class="card">
+          <div class="card-header">Cumulative Abatement Costs</div>
+          <div class="card-body"><div class="chart-container"><canvas id="abatementChart"></canvas></div></div>
+        </div>
       </div>
+    </div>
+
+    <!-- Tab 3: Financial Summary -->
+    <div class="tab-panel" id="tab-summary">
       <div class="card">
-        <div class="card-header">Cumulative Abatement Costs</div>
-        <div class="card-body"><div class="chart-container"><canvas id="abatementChart"></canvas></div></div>
+        <div class="card-header">Net Financial Position by 2100</div>
+        <div class="card-body" style="align-items:stretch;">
+          <table class="summary-table" id="summaryTable">
+            <thead>
+              <tr>
+                <th>Country</th>
+                <th class="num">Cumul. Abatement ($B)</th>
+                <th class="num">Cumul. Transfers ($B)</th>
+                <th class="num">Climate Damages (% GDP/cap)</th>
+                <th class="num">Net Financial Cost ($B)</th>
+              </tr>
+            </thead>
+            <tbody id="summaryBody"></tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
 
 <script>
-// ======================== DATA ========================
-
-const YEARS = [];
-for (let y = 2000; y <= 2100; y++) YEARS.push(y);
-
-const emissionsBaseline = {
-  "Developed":    [20.32,20.22,20.33,20.53,20.81,20.85,20.97,21.12,20.65,19.3,19.98,20.02,19.8,19.73,19.56,19.43,19.29,19.45,19.72,19.35,17.83,18.56,18.61,17.57,17.41,17.27,17.12,16.99,16.87,16.75,16.64,16.54,16.45,16.36,16.28,16.2,16.13,16.06,16,15.94,15.89,15.84,15.8,15.76,15.72,15.68,15.64,15.61,15.58,15.55,15.52,15.5,15.47,15.45,15.43,15.41,15.39,15.37,15.35,15.33,15.32,15.31,15.3,15.29,15.28,15.27,15.27,15.27,15.27,15.27,15.27,15.28,15.28,15.29,15.3,15.31,15.33,15.34,15.36,15.38,15.39,15.41,15.43,15.45,15.48,15.5,15.52,15.55,15.58,15.61,15.63,15.66,15.69,15.72,15.75,15.79,15.82,15.85,15.89,15.92,15.96],
-  "Developing A": [14.41,14.58,15.46,16.65,17.7,18.67,19.81,20.65,21.31,21.99,23.04,24.43,25.04,25.36,25.82,25.77,25.72,26.19,26.87,27.49,27.21,28.29,28.6,29.07,29.14,29.23,29.33,29.44,29.56,29.69,29.81,29.94,30.05,30.16,30.27,30.38,30.48,30.56,30.6,30.66,30.73,30.8,30.85,30.94,31.02,31.09,31.16,31.22,31.28,31.33,31.36,31.39,31.41,31.42,31.42,31.41,31.39,31.36,31.33,31.28,31.23,31.18,31.12,31.05,30.98,30.91,30.84,30.76,30.68,30.6,30.51,30.43,30.34,30.25,30.15,30.05,29.95,29.84,29.72,29.6,29.47,29.34,29.21,29.07,28.94,28.8,28.65,28.51,28.36,28.21,28.06,27.9,27.75,27.59,27.43,27.27,27.1,26.94,26.77,26.6,26.44],
-  "Developing B": [7.48,7.57,7.73,8.21,8.56,8.94,9.22,9.45,9.79,9.93,10.44,10.67,11.17,11.42,11.78,12.21,12.65,13.04,13.3,13.82,13.65,14.12,14.44,14.43,14.59,14.76,14.93,15.12,15.3,15.48,15.66,15.85,16.02,16.19,16.36,16.53,16.7,16.87,17.03,17.2,17.37,17.54,17.6,17.68,17.75,17.84,17.93,18.02,18.12,18.22,18.32,18.43,18.51,18.59,18.68,18.77,18.86,18.96,19.05,19.15,19.24,19.34,19.44,19.54,19.63,19.73,19.83,19.92,20.02,20.11,20.2,20.3,20.35,20.43,20.52,20.61,20.71,20.8,20.88,20.97,21.05,21.13,21.21,21.28,21.35,21.41,21.47,21.53,21.58,21.63,21.67,21.72,21.76,21.8,21.83,21.86,21.89,21.92,21.95,21.98,22]
-};
-
-const gdpBaseline = {
-  "Developed":    [37590.91,38223.14,38790.28,39576.86,40855.53,41949.22,43282.69,44519.29,44747.52,42804.95,43848.41,44517.62,44895.76,45321.93,45934.27,46573.51,47120.31,48101.32,49062.81,49831.33,47739.73,50346.52,51337.92,52153.56,52869.13,53589.81,54321.23,55069.6,55831.77,56606.34,57390.81,58183.1,58981.67,59787.15,60600.89,61424.44,62259,63105.6,63964.96,64838.16,65724.74,66622.55,67530.15,68445.97,69370.52,70305.14,71251.14,72209.91,73182.8,74170.9,75175.26,76195.66,77231.91,78285.65,79355.8,80440.5,81540.6,82657.39,83791.32,84942.18,86110.34,87296.73,88500.52,89720.46,90956.98,92211.15,93483.68,94774.78,96084.65,97414.22,98763.98,100134.66,101526.25,102939.13,104372.68,105825.19,107294.83,108780.62,110284.13,111806.28,113347.9,114912.76,116502.59,118116.61,119756.02,121420.37,123109.2,124821.77,126557.25,128317.35,130102.73,131915.31,133758.63,135632.37,137536.41,139471.57,141436.8,143432.57,145460.24,147519.76],
-  "Developing A": [5309.05,5458.2,5658.7,5939.08,6310.34,6696.62,7171.47,7725.07,8080.23,8385.06,8995.51,9478.43,9930.93,10404.38,10889.98,11367.94,11882.63,12450.8,13042.16,13504.86,13190.1,14094.54,14602.31,15263.67,15814.56,16372.71,16936.71,17507.34,18084.19,18666.47,19253.14,19843,20435.05,21029.22,21625.53,22224.4,22826.02,23430.53,24038.13,24649.08,25263.03,25878.83,26495.62,27112.78,27730.27,28347.89,28965.72,29583.76,30202.2,30820.74,31439.27,32057.29,32674.33,33290.74,33906.18,34519.79,35131.49,35741.76,36350.77,36958.96,37567.24,38176.01,38785.41,39395.19,40005.97,40618.52,41233.4,41850.71,42471.13,43095.02,43722.67,44354.34,44990.12,45630.09,46273.43,46919.14,47566.12,48214.27,48863.74,49514.64,50167.18,50822.53,51481.9,52145.92,52814.72,53488.58,54167.57,54851.25,55539.24,56232.48,56931.92,57638.23,58351.96,59073.2,59801.89,60538.12,61281.4,62031.81,62789.37,63553.5],
-  "Developing B": [7456.71,7391.02,7430.88,7616.71,8001.9,8288.12,8610.74,8934.6,9108.58,8979.4,9355.64,9653.17,9808.34,9981.17,10138.21,10275.03,10403.24,10552.95,10653.48,10703.67,10241.28,10706.26,11029.7,11122.73,11257.54,11395,11534.14,11675.79,11820.29,11967.38,12116.6,12267.43,12419.56,12573.17,12728.5,12885.93,13045.75,13208.15,13373.28,13541.45,13712.6,13886.28,14062.12,14239.85,14419.62,14601.68,14786.26,14973.52,15163.73,15357.04,15553.6,15753.35,15956.26,16162.58,16372.11,16584.56,16799.91,17018.32,17239.83,17464.51,17692.58,17924.13,18158.92,18396.77,18637.78,18882.17,19130.04,19381.5,19636.6,19895.51,20158.44,20425.51,20696.9,20972.73,21252.77,21536.65,21824.1,22115.05,22409.66,22708.18,23010.84,23318.08,23630.24,23947.45,24269.81,24597.23,24929.48,25266.29,25607.54,25953.49,26304.4,26660.64,27022.74,27390.77,27764.78,28144.82,28530.88,28923.06,29321.56,29726.2]
-};
+// ======================== COUNTRY DATA ========================
+const COUNTRY_DATA = [
+  { id: "us",  name: "United States",       pop0: 309e6,  gdpCap0: 43952, baseTemp: 13.6,
+    gdpGrowth: 0.016, popGrowth: 0.005, tconv: 1.32,
+    emissions0: 5.9, emisGrowth: -0.005,
+    costParams: { c1: 200, c2: 50 }, color: "#2563eb" },
+  { id: "eu",  name: "European Union",      pop0: 316e6,  gdpCap0: 33168, baseTemp: 11.2,
+    gdpGrowth: 0.016, popGrowth: 0.002, tconv: 1.14,
+    emissions0: 3.2, emisGrowth: -0.020,
+    costParams: { c1: 200, c2: 50 }, color: "#7c3aed" },
+  { id: "cn",  name: "China",               pop0: 1338e6, gdpCap0: 2870,  baseTemp: 14.2,
+    gdpGrowth: 0.085, popGrowth: -0.005, tconv: 1.29,
+    emissions0: 15.5, emisGrowth: 0.005,
+    costParams: { c1: 100, c2: 25 }, color: "#e11d48" },
+  { id: "in",  name: "India",               pop0: 1206e6, gdpCap0: 1032,  baseTemp: 25.7,
+    gdpGrowth: 0.042, popGrowth: 0.003, tconv: 1.14,
+    emissions0: 4.4, emisGrowth: 0.035,
+    costParams: { c1: 80, c2: 20 }, color: "#f59e0b" },
+  { id: "ssa", name: "Sub-Saharan Africa",  pop0: 384e6,  gdpCap0: 1338,  baseTemp: 22.7,
+    gdpGrowth: 0.009, popGrowth: 0.015, tconv: 1.12,
+    emissions0: 2.4, emisGrowth: 0.030,
+    costParams: { c1: 80, c2: 15 }, color: "#16a34a" },
+  { id: "oil", name: "Oil States",          pop0: 144e6,  gdpCap0: 7185,  baseTemp: 19.8,
+    gdpGrowth: 0.001, popGrowth: 0.007, tconv: 1.42,
+    emissions0: 2.8, emisGrowth: 0.020,
+    costParams: { c1: 250, c2: 75 }, color: "#64748b" }
+];
 
 // ======================== CONSTANTS ========================
+const BASE_YEAR = 2010;
+const END_YEAR = 2100;
+const N_YEARS = END_YEAR - BASE_YEAR + 1;
+const YEARS = Array.from({length: N_YEARS}, (_, i) => BASE_YEAR + i);
 
-const CONC_BASE = 369.84;
+const CONC_BASE = 390.42;
 const CONC_PREINDUSTRIAL = 297.05671;
 const CLIMATE_SENSITIVITY = 2.36701601;
 const CONC_INTERCEPT = 0.989269259844167;
 const CONC_SLOPE = 0.0244625358530223;
 
-const TEMP_BASE = { "Developed": 15, "Developing A": 24.8, "Developing B": 28 };
-const GDP_GROWTH = { "Developed": 0.015, "Developing A": 0.04, "Developing B": 0.01 };
+const BETA1 = 0.0127;
+const BETA2 = -0.0005;
+const TEMP_CAP = 30;
 
-const COST_PARAMS = {
-  "Developed":    { c1: 200, c2: 50 },
-  "Developing A": { c1: 100, c2: 25 },
-  "Developing B": { c1: 100, c2: 10 }
-};
+// ======================== SIMULATION ========================
 
-const COUNTRIES = ["Developed", "Developing A", "Developing B"];
-const COLORS = { "Developed": "#2563eb", "Developing A": "#e11d48", "Developing B": "#16a34a" };
+function bauEmissions(country) {
+  return YEARS.map((_, i) => country.emissions0 * Math.pow(1 + country.emisGrowth, i));
+}
 
-// ======================== SIMULATION FUNCTIONS ========================
-
-function computeEmissionsPathway(country, reductionYear, reductionRate) {
-  const baseline = emissionsBaseline[country];
-  const result = baseline.slice();
-  if (reductionRate <= 0 || reductionYear >= 2100) return result;
-
-  const yearIdx = reductionYear - 2000;
-  const peakEmissions = baseline[yearIdx];
-
-  for (let y = reductionYear; y <= 2100; y++) {
-    const i = y - 2000;
-    result[i] = peakEmissions * Math.pow(1 - reductionRate, y - reductionYear + 1);
+function policyEmissions(country, reductionYear, reductionRate) {
+  const bau = bauEmissions(country);
+  if (reductionRate <= 0 || reductionYear >= END_YEAR) return bau;
+  const result = bau.slice();
+  const yearIdx = reductionYear - BASE_YEAR;
+  const peak = bau[yearIdx];
+  for (let i = yearIdx; i < N_YEARS; i++) {
+    result[i] = peak * Math.pow(1 - reductionRate, (BASE_YEAR + i) - reductionYear + 1);
   }
   return result;
 }
 
-function computeTotalEmissions(policies) {
-  const totals = new Array(101).fill(0);
-  for (const c of COUNTRIES) {
-    const path = computeEmissionsPathway(c, policies[c].year, policies[c].rate);
-    for (let i = 0; i < 101; i++) totals[i] += path[i];
-  }
+function totalEmissions(policies) {
+  const totals = new Array(N_YEARS).fill(0);
+  COUNTRY_DATA.forEach(c => {
+    const p = policies[c.id];
+    const path = policyEmissions(c, p.year, p.rate);
+    for (let i = 0; i < N_YEARS; i++) totals[i] += path[i];
+  });
   return totals;
 }
 
-function emissionsToTemp(totalEmissions) {
-  const conc = new Array(101);
-  const temp = new Array(101);
-  for (let i = 0; i < 101; i++) {
-    if (i === 0) {
-      conc[i] = CONC_BASE + totalEmissions[i] * CONC_SLOPE + CONC_INTERCEPT;
-    } else {
-      conc[i] = conc[i - 1] + totalEmissions[i] * CONC_SLOPE + CONC_INTERCEPT;
-    }
+function emissionsToGlobalTemp(totEmissions) {
+  const conc = new Array(N_YEARS);
+  const temp = new Array(N_YEARS);
+  for (let i = 0; i < N_YEARS; i++) {
+    conc[i] = (i === 0 ? CONC_BASE : conc[i-1]) + totEmissions[i] * CONC_SLOPE + CONC_INTERCEPT;
     temp[i] = CLIMATE_SENSITIVITY * Math.log2(conc[i] / CONC_PREINDUSTRIAL);
   }
   return temp;
 }
 
-function damageFunc(t) {
-  return 0.0127 * t - 0.0005 * t * t;
+function damageFunc(T) {
+  const t = Math.min(T, TEMP_CAP);
+  return BETA1 * t + BETA2 * t * t;
 }
 
-function computeDamages(country, tempPath) {
-  const baseTemp = TEMP_BASE[country];
-  const growthRate = GDP_GROWTH[country];
-  const gdpStart = gdpBaseline[country][0];
-  const tempChange2000 = tempPath[0];
-
-  // GDP under no further climate change
-  const gdpNoCC = new Array(101);
-  gdpNoCC[0] = gdpStart;
-  for (let i = 1; i < 101; i++) {
-    gdpNoCC[i] = gdpNoCC[i - 1] * (1 + growthRate);
+function computeDamages(country, globalTemp) {
+  const temp0 = globalTemp[0];
+  const gdpNoCC = new Array(N_YEARS);
+  const gdpCC = new Array(N_YEARS);
+  gdpNoCC[0] = gdpCC[0] = country.gdpCap0;
+  for (let i = 1; i < N_YEARS; i++) {
+    gdpNoCC[i] = gdpNoCC[i-1] * (1 + country.gdpGrowth);
+    const localDeltaT = (globalTemp[i] - temp0) * country.tconv;
+    const localTemp = country.baseTemp + localDeltaT;
+    const dmg = damageFunc(localTemp) - damageFunc(country.baseTemp);
+    gdpCC[i] = gdpCC[i-1] * (1 + country.gdpGrowth + dmg);
   }
-
-  // GDP under the given temperature pathway
-  const gdpPath = new Array(101);
-  gdpPath[0] = gdpStart;
-  for (let i = 1; i < 101; i++) {
-    const tempDelta = tempPath[i] - tempChange2000;
-    const dmg = damageFunc(baseTemp + tempDelta) - damageFunc(baseTemp);
-    gdpPath[i] = gdpPath[i - 1] * (1 + growthRate + dmg);
-  }
-
-  return YEARS.map((_, i) => (gdpPath[i] - gdpNoCC[i]) / gdpNoCC[i]);
+  return YEARS.map((_, i) => (gdpCC[i] - gdpNoCC[i]) / gdpNoCC[i]);
 }
 
 function computeAbatementCosts(country, reductionYear, reductionRate) {
-  const { c1, c2 } = COST_PARAMS[country];
-  const policyPath = computeEmissionsPathway(country, reductionYear, reductionRate);
-
-  const costs = new Array(101).fill(0);
-  const cumCosts = new Array(101).fill(0);
-
-  for (let i = 0; i < 101; i++) {
-    const y = 2000 + i;
+  const { c1, c2 } = country.costParams;
+  const path = policyEmissions(country, reductionYear, reductionRate);
+  const costs = new Array(N_YEARS).fill(0);
+  const cumCosts = new Array(N_YEARS).fill(0);
+  for (let i = 0; i < N_YEARS; i++) {
+    const y = BASE_YEAR + i;
     if (y >= reductionYear && reductionRate > 0) {
-      const yearsSinceStart = y - reductionYear + 1;
-      const cumAbatement = 1 - Math.pow(1 - reductionRate, yearsSinceStart);
+      const yrs = y - reductionYear + 1;
+      const cumAbatement = 1 - Math.pow(1 - reductionRate, yrs);
       const mac = c1 * cumAbatement + c2 * cumAbatement * cumAbatement;
-      const abated = (i > 0) ? (policyPath[i] - policyPath[i - 1]) : 0;
+      const abated = i > 0 ? (path[i] - path[i-1]) : 0;
       costs[i] = -mac * abated;
     }
-    cumCosts[i] = (i > 0 ? cumCosts[i - 1] : 0) + costs[i];
+    cumCosts[i] = (i > 0 ? cumCosts[i-1] : 0) + costs[i];
   }
   return cumCosts;
 }
 
-// ======================== CHART SETUP ========================
+// ======================== TABS ========================
+
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    setTimeout(() => { emissionsChart.resize(); tempChart.resize(); damagesChart.resize(); abatementChart.resize(); }, 10);
+  });
+});
+
+// ======================== UI GENERATION ========================
+
+const grid = document.getElementById('policyGrid');
+COUNTRY_DATA.forEach(c => {
+  const col = document.createElement('div');
+  col.className = 'country-col';
+  col.innerHTML = `
+    <div class="country-header">
+      <span class="country-dot" style="background:${c.color}"></span>
+      <span>${c.name}</span>
+    </div>
+    <div class="input-group">
+      <label>Reduction Start Year</label>
+      <div class="input-row">
+        <input type="range" id="${c.id}_year" min="2015" max="2100" value="2100" step="1">
+        <span class="input-value" id="${c.id}_year_val">2100</span>
+      </div>
+    </div>
+    <div class="input-group">
+      <label>Reduction Rate (%/yr)</label>
+      <div class="input-row">
+        <input type="range" id="${c.id}_rate" min="0" max="20" value="0" step="0.5">
+        <span class="input-value" id="${c.id}_rate_val">0%</span>
+      </div>
+    </div>
+    <div class="input-group">
+      <label>Net Transfer ($B/yr)</label>
+      <input type="number" id="${c.id}_transfer" value="0" step="1" class="transfer-input">
+    </div>`;
+  grid.appendChild(col);
+});
+
+// Reset button
+document.getElementById('resetBtn').addEventListener('click', () => {
+  COUNTRY_DATA.forEach(c => {
+    document.getElementById(c.id + '_year').value = 2100;
+    document.getElementById(c.id + '_rate').value = 0;
+    document.getElementById(c.id + '_transfer').value = 0;
+  });
+  updateAll();
+});
+
+// ======================== CHARTS ========================
 
 const chartDefaults = {
-  responsive: true,
-  maintainAspectRatio: false,
+  responsive: true, maintainAspectRatio: false,
   animation: { duration: 150 },
   interaction: { mode: 'index', intersect: false },
   plugins: {
-    legend: {
-      position: 'bottom',
-      labels: { usePointStyle: true, pointStyle: 'line', padding: 12, font: { size: 11 } }
-    }
+    legend: { position: 'bottom', labels: { usePointStyle: true, pointStyle: 'line', padding: 10, font: { size: 10 } } }
   },
   scales: {
-    x: {
-      title: { display: true, text: 'Year', font: { size: 12 } },
-      ticks: { maxTicksLimit: 11, font: { size: 10 } },
-      grid: { display: false }
-    },
-    y: {
-      grid: { color: '#e5e7eb' },
-      ticks: { font: { size: 10 } }
-    }
+    x: { title: { display: true, text: 'Year', font: { size: 11 } }, ticks: { maxTicksLimit: 10, font: { size: 9 } }, grid: { display: false } },
+    y: { grid: { color: '#e5e7eb' }, ticks: { font: { size: 9 } } }
   },
   elements: { point: { radius: 0 }, line: { borderWidth: 2.5 } }
 };
 
-function makeConfig(yLabel, datasets, extraScaleOpts) {
-  const cfg = {
-    type: 'line',
-    data: { labels: YEARS, datasets },
-    options: JSON.parse(JSON.stringify(chartDefaults))
-  };
-  cfg.options.scales.y.title = { display: true, text: yLabel, font: { size: 12 } };
-  if (extraScaleOpts) Object.assign(cfg.options.scales.y, extraScaleOpts);
+function makeConfig(yLabel, datasets, extraY) {
+  const cfg = { type: 'line', data: { labels: YEARS, datasets }, options: JSON.parse(JSON.stringify(chartDefaults)) };
+  cfg.options.scales.y.title = { display: true, text: yLabel, font: { size: 11 } };
+  if (extraY) Object.assign(cfg.options.scales.y, extraY);
   return cfg;
 }
 
-// Emissions chart
+const bauPolicies = Object.fromEntries(COUNTRY_DATA.map(c => [c.id, { year: 2100, rate: 0 }]));
+const bauTotals = totalEmissions(bauPolicies);
+const bauTemp = emissionsToGlobalTemp(bauTotals);
+
 const emissionsChart = new Chart(document.getElementById('emissionsChart'), makeConfig(
   'Gt CO\u2082e / year',
   [
-    ...COUNTRIES.map(c => ({ label: c + ' (BAU)', data: emissionsBaseline[c], borderColor: COLORS[c], borderDash: [6, 3], backgroundColor: 'transparent' })),
-    ...COUNTRIES.map(c => ({ label: c + ' (Policy)', data: emissionsBaseline[c].slice(), borderColor: COLORS[c], backgroundColor: 'transparent' }))
+    { label: 'Global BAU', data: bauTotals, borderColor: '#94a3b8', borderDash: [6,3], backgroundColor: 'transparent', borderWidth: 2 },
+    ...COUNTRY_DATA.map(c => ({ label: c.name, data: bauEmissions(c), borderColor: c.color, backgroundColor: 'transparent' }))
   ]
 ));
-
-// Temperature chart — compute baseline temp
-const bauPolicies = { "Developed": { year: 2100, rate: 0 }, "Developing A": { year: 2100, rate: 0 }, "Developing B": { year: 2100, rate: 0 } };
-const baselineTotals = computeTotalEmissions(bauPolicies);
-const baselineTemp = emissionsToTemp(baselineTotals);
 
 const tempChart = new Chart(document.getElementById('tempChart'), makeConfig(
   '\u00B0C Above Pre-industrial',
   [
-    { label: 'Business-as-Usual', data: baselineTemp, borderColor: '#64748b', backgroundColor: 'transparent', borderDash: [6, 3] },
-    { label: 'New Policies', data: baselineTemp.slice(), borderColor: '#2563eb', backgroundColor: 'transparent' },
-    { label: '1.5\u00B0C Target', data: new Array(101).fill(1.5), borderColor: '#f59e0b', borderDash: [3, 3], borderWidth: 1.5, backgroundColor: 'transparent' },
-    { label: '2.0\u00B0C Target', data: new Array(101).fill(2.0), borderColor: '#ef4444', borderDash: [3, 3], borderWidth: 1.5, backgroundColor: 'transparent' }
+    { label: 'Business-as-Usual', data: bauTemp, borderColor: '#64748b', borderDash: [6,3], backgroundColor: 'transparent' },
+    { label: 'New Policies', data: bauTemp.slice(), borderColor: '#2563eb', backgroundColor: 'transparent' },
+    { label: '1.5\u00B0C Target', data: new Array(N_YEARS).fill(1.5), borderColor: '#f59e0b', borderDash: [3,3], borderWidth: 1.5, backgroundColor: 'transparent' },
+    { label: '2.0\u00B0C Target', data: new Array(N_YEARS).fill(2.0), borderColor: '#ef4444', borderDash: [3,3], borderWidth: 1.5, backgroundColor: 'transparent' }
   ]
 ));
 
-// Damages chart
 const damagesChart = new Chart(document.getElementById('damagesChart'), makeConfig(
   '% Change in per Capita GDP',
-  [
-    ...COUNTRIES.map(c => ({ label: c + ' (BAU)', data: new Array(101).fill(0), borderColor: COLORS[c], borderDash: [6, 3], backgroundColor: 'transparent' })),
-    ...COUNTRIES.map(c => ({ label: c + ' (Policy)', data: new Array(101).fill(0), borderColor: COLORS[c], backgroundColor: 'transparent' }))
-  ],
-  { ticks: { callback: function(v) { return (v * 100).toFixed(0) + '%'; } } }
+  COUNTRY_DATA.map(c => ({ label: c.name, data: new Array(N_YEARS).fill(0), borderColor: c.color, backgroundColor: 'transparent' })),
+  { ticks: { callback: v => (v * 100).toFixed(0) + '%' } }
 ));
 
-// Abatement chart
 const abatementChart = new Chart(document.getElementById('abatementChart'), makeConfig(
   'Cumulative Abatement Costs ($B)',
-  COUNTRIES.map(c => ({ label: c, data: new Array(101).fill(0), borderColor: COLORS[c], backgroundColor: 'transparent' })),
-  { ticks: { callback: function(v) { return '$' + v.toLocaleString(); } } }
+  COUNTRY_DATA.map(c => ({ label: c.name, data: new Array(N_YEARS).fill(0), borderColor: c.color, backgroundColor: 'transparent' })),
+  { ticks: { callback: v => '$' + v.toLocaleString() } }
 ));
 
-// ======================== UPDATE LOGIC ========================
+// ======================== SUMMARY TABLE ========================
+
+function formatDollars(v) {
+  const abs = Math.abs(v);
+  const s = abs >= 1000 ? (abs/1000).toFixed(1) + 'T' : abs.toFixed(0) + 'B';
+  return (v < 0 ? '-' : '') + '$' + s;
+}
+
+function updateSummaryTable(policies, policyTemp) {
+  const tbody = document.getElementById('summaryBody');
+  let totalAbatement = 0, totalTransfers = 0, totalNet = 0;
+
+  const rows = COUNTRY_DATA.map(c => {
+    const p = policies[c.id];
+    const abateCosts = computeAbatementCosts(c, p.year, p.rate);
+    const abate2100 = abateCosts[N_YEARS - 1];
+    const cumTransfer = p.transfer * (END_YEAR - BASE_YEAR);
+    const damages = computeDamages(c, policyTemp);
+    const dmg2100 = damages[N_YEARS - 1];
+    const netCost = abate2100 + cumTransfer;
+
+    totalAbatement += abate2100;
+    totalTransfers += cumTransfer;
+    totalNet += netCost;
+
+    return { name: c.name, color: c.color, abate2100, cumTransfer, dmg2100, netCost };
+  });
+
+  tbody.innerHTML = rows.map(r => `
+    <tr>
+      <td><div class="country-cell"><span class="country-dot" style="background:${r.color}"></span> ${r.name}</div></td>
+      <td class="num">${formatDollars(r.abate2100)}</td>
+      <td class="num ${r.cumTransfer > 0.5 ? 'positive' : r.cumTransfer < -0.5 ? 'negative' : ''}">${formatDollars(r.cumTransfer)}</td>
+      <td class="num ${r.dmg2100 < -0.001 ? 'positive' : r.dmg2100 > 0.001 ? 'negative' : ''}">${(r.dmg2100 * 100).toFixed(1)}%</td>
+      <td class="num ${r.netCost > 0.5 ? 'positive' : r.netCost < -0.5 ? 'negative' : ''}">${formatDollars(r.netCost)}</td>
+    </tr>`).join('') + `
+    <tr>
+      <td><strong>Total</strong></td>
+      <td class="num">${formatDollars(totalAbatement)}</td>
+      <td class="num">${formatDollars(totalTransfers)}</td>
+      <td class="num">--</td>
+      <td class="num">${formatDollars(totalNet)}</td>
+    </tr>`;
+}
+
+// ======================== UPDATE ========================
 
 function getPolicies() {
-  return {
-    "Developed":    { year: +document.getElementById('developed_year').value,   rate: +document.getElementById('developed_rate').value / 100 },
-    "Developing A": { year: +document.getElementById('developingA_year').value,  rate: +document.getElementById('developingA_rate').value / 100 },
-    "Developing B": { year: +document.getElementById('developingB_year').value,  rate: +document.getElementById('developingB_rate').value / 100 }
-  };
+  const p = {};
+  COUNTRY_DATA.forEach(c => {
+    p[c.id] = {
+      year: +document.getElementById(c.id + '_year').value,
+      rate: +document.getElementById(c.id + '_rate').value / 100,
+      transfer: +document.getElementById(c.id + '_transfer').value || 0
+    };
+  });
+  return p;
 }
 
 function updateAll() {
   const policies = getPolicies();
 
-  // Update value displays
-  document.getElementById('developed_year_val').textContent = policies["Developed"].year;
-  document.getElementById('developed_rate_val').textContent = (policies["Developed"].rate * 100).toFixed(1) + '%';
-  document.getElementById('developingA_year_val').textContent = policies["Developing A"].year;
-  document.getElementById('developingA_rate_val').textContent = (policies["Developing A"].rate * 100).toFixed(1) + '%';
-  document.getElementById('developingB_year_val').textContent = policies["Developing B"].year;
-  document.getElementById('developingB_rate_val').textContent = (policies["Developing B"].rate * 100).toFixed(1) + '%';
+  // Update display values
+  COUNTRY_DATA.forEach(c => {
+    const p = policies[c.id];
+    document.getElementById(c.id + '_year_val').textContent = p.year;
+    document.getElementById(c.id + '_rate_val').textContent = (p.rate * 100).toFixed(1) + '%';
+  });
 
-  // 1. Emissions pathways
-  COUNTRIES.forEach((c, ci) => {
-    emissionsChart.data.datasets[ci + 3].data = computeEmissionsPathway(c, policies[c].year, policies[c].rate);
+  // Transfer balance
+  const netTransfer = COUNTRY_DATA.reduce((s, c) => s + policies[c.id].transfer, 0);
+  const balEl = document.getElementById('transferBalance');
+  if (Math.abs(netTransfer) < 0.01) {
+    balEl.className = 'transfer-balance balanced';
+    balEl.textContent = 'Net Transfer Balance: $0 B/yr (balanced)';
+  } else {
+    balEl.className = 'transfer-balance imbalanced';
+    const sign = netTransfer > 0 ? '+' : '';
+    balEl.textContent = `Net Transfer Balance: ${sign}${netTransfer.toFixed(1)} B/yr (imbalanced)`;
+  }
+
+  // 1. Emissions
+  const policyTotals = new Array(N_YEARS).fill(0);
+  COUNTRY_DATA.forEach((c, ci) => {
+    const path = policyEmissions(c, policies[c.id].year, policies[c.id].rate);
+    emissionsChart.data.datasets[ci + 1].data = path;
+    for (let i = 0; i < N_YEARS; i++) policyTotals[i] += path[i];
   });
   emissionsChart.update();
 
   // 2. Temperature
-  const policyTotals = computeTotalEmissions(policies);
-  const policyTemp = emissionsToTemp(policyTotals);
+  const policyTemp = emissionsToGlobalTemp(policyTotals);
   tempChart.data.datasets[1].data = policyTemp;
   tempChart.update();
 
   // 3. Damages
-  const bauDamages = COUNTRIES.map(c => computeDamages(c, baselineTemp));
-  const policyDamages = COUNTRIES.map(c => computeDamages(c, policyTemp));
-  COUNTRIES.forEach((c, ci) => {
-    damagesChart.data.datasets[ci].data = bauDamages[ci];
-    damagesChart.data.datasets[ci + 3].data = policyDamages[ci];
+  COUNTRY_DATA.forEach((c, ci) => {
+    damagesChart.data.datasets[ci].data = computeDamages(c, policyTemp);
   });
   damagesChart.update();
 
   // 4. Abatement costs
-  COUNTRIES.forEach((c, ci) => {
-    abatementChart.data.datasets[ci].data = computeAbatementCosts(c, policies[c].year, policies[c].rate);
+  const totalAbate = new Array(N_YEARS).fill(0);
+  COUNTRY_DATA.forEach((c, ci) => {
+    const costs = computeAbatementCosts(c, policies[c.id].year, policies[c.id].rate);
+    abatementChart.data.datasets[ci].data = costs;
+    for (let i = 0; i < N_YEARS; i++) totalAbate[i] += costs[i];
   });
   abatementChart.update();
+
+  // 5. Headline metrics
+  const temp2100 = policyTemp[N_YEARS - 1];
+  const emis2100 = policyTotals[N_YEARS - 1];
+  const abate2100 = totalAbate[N_YEARS - 1];
+
+  const tempEl = document.getElementById('metricTemp');
+  tempEl.textContent = temp2100.toFixed(2) + '\u00B0C';
+  tempEl.className = 'metric-value' + (temp2100 > 2 ? ' warn' : temp2100 <= 1.5 ? ' ok' : '');
+
+  document.getElementById('metricEmissions').textContent = emis2100.toFixed(1);
+  document.getElementById('metricAbatement').textContent = formatDollars(abate2100);
+
+  // 6. Summary table
+  updateSummaryTable(policies, policyTemp);
 }
 
-// Wire up inputs
-document.querySelectorAll('input[type="range"]').forEach(input => {
-  input.addEventListener('input', updateAll);
+// Wire inputs
+document.querySelectorAll('input[type="range"], input[type="number"]').forEach(el => {
+  el.addEventListener('input', updateAll);
 });
 
 // Initial render
