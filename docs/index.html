@@ -113,12 +113,50 @@
     .transfer-balance.balanced { background: #dcfce7; color: #166534; }
     .transfer-balance.imbalanced { background: #fef2f2; color: #991b1b; }
 
-    .reset-btn {
+    .policy-btn {
       padding: 0.35rem 0.9rem; font-size: 0.78rem; font-weight: 600;
       background: #f1f5f9; border: 1px solid var(--border); border-radius: 6px;
       cursor: pointer; color: var(--text-muted); transition: all 0.15s;
     }
-    .reset-btn:hover { background: #e2e8f0; color: var(--text); }
+    .policy-btn:hover { background: #e2e8f0; color: var(--text); }
+    .policy-btn.primary { background: #2563eb; color: white; border-color: #2563eb; }
+    .policy-btn.primary:hover { background: #1d4ed8; }
+    .policy-btns { display: flex; gap: 0.4rem; }
+
+    /* Click-to-edit value labels */
+    .input-value { cursor: pointer; border-bottom: 1px dashed var(--border); }
+    .input-value:hover { color: #2563eb; border-bottom-color: #2563eb; }
+    .input-value-edit {
+      width: 52px; padding: 0.1rem 0.25rem; font-size: 0.75rem; font-weight: 600;
+      border: 1px solid #2563eb; border-radius: 4px; text-align: right;
+      font-variant-numeric: tabular-nums; outline: none;
+    }
+
+    /* Quick Entry modal */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+      z-index: 1000; justify-content: center; align-items: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--card-bg); border-radius: 12px; box-shadow: var(--shadow-lg);
+      padding: 1.5rem; max-width: 700px; width: 95%; max-height: 90vh; overflow-y: auto;
+    }
+    .modal h2 { font-size: 1.1rem; margin-bottom: 0.75rem; }
+    .qe-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    .qe-table th {
+      text-align: left; padding: 0.4rem 0.5rem; font-size: 0.75rem;
+      color: var(--text-muted); border-bottom: 2px solid var(--border);
+    }
+    .qe-table td { padding: 0.4rem 0.5rem; border-bottom: 1px solid #f0f0f0; }
+    .qe-table .qe-country { display: flex; align-items: center; gap: 0.4rem; font-weight: 500; white-space: nowrap; }
+    .qe-input {
+      width: 70px; padding: 0.3rem 0.4rem; font-size: 0.85rem; font-weight: 600;
+      border: 1px solid var(--border); border-radius: 6px; text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+    .qe-input:focus { outline: 2px solid #2563eb; border-color: transparent; }
+    .modal-actions { display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 1rem; }
 
     /* Summary table */
     .summary-table {
@@ -222,7 +260,10 @@
       <div class="card-header">
         <div class="policy-header-row" style="width:100%">
           <span>Policy Settings</span>
-          <button class="reset-btn" id="resetBtn">Reset All</button>
+          <div class="policy-btns">
+            <button class="policy-btn primary" id="quickEntryBtn">Quick Entry</button>
+            <button class="policy-btn" id="resetBtn">Reset All</button>
+          </div>
         </div>
       </div>
       <div class="card-body" style="flex-direction:column; align-items:stretch;">
@@ -319,6 +360,28 @@
             <tbody id="summaryBody"></tbody>
           </table>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Entry Modal -->
+  <div class="modal-overlay" id="qeOverlay">
+    <div class="modal">
+      <h2>Quick Entry</h2>
+      <table class="qe-table">
+        <thead>
+          <tr>
+            <th>Country</th>
+            <th>Start Year</th>
+            <th>Rate (%/yr)</th>
+            <th>Transfer ($B/yr)</th>
+          </tr>
+        </thead>
+        <tbody id="qeBody"></tbody>
+      </table>
+      <div class="modal-actions">
+        <button class="policy-btn" id="qeCancelBtn">Cancel</button>
+        <button class="policy-btn primary" id="qeApplyBtn">Apply All</button>
       </div>
     </div>
   </div>
@@ -644,6 +707,126 @@ document.getElementById('resetBtn').addEventListener('click', () => {
     document.getElementById(c.id + '_transfer').value = 0;
   });
   updateAll();
+});
+
+// ======================== CLICK-TO-EDIT VALUES ========================
+
+document.querySelectorAll('.input-value').forEach(span => {
+  span.addEventListener('click', () => {
+    const id = span.id; // e.g. "us_year_val" or "us_rate_val"
+    const isYear = id.includes('_year_');
+    const sliderId = id.replace('_val', '');
+    const slider = document.getElementById(sliderId);
+
+    const input = document.createElement('input');
+    input.type = 'number';
+    input.className = 'input-value-edit';
+    input.value = slider.value;
+    input.min = slider.min;
+    input.max = slider.max;
+    input.step = slider.step;
+
+    span.replaceWith(input);
+    input.focus();
+    input.select();
+
+    const commit = () => {
+      let v = +input.value;
+      v = Math.max(+slider.min, Math.min(+slider.max, v));
+      if (isYear) v = Math.round(v);
+      slider.value = v;
+      const newSpan = document.createElement('span');
+      newSpan.className = 'input-value';
+      newSpan.id = id;
+      newSpan.textContent = isYear ? v : v.toFixed(1) + '%';
+      input.replaceWith(newSpan);
+      // Re-attach click handler
+      newSpan.addEventListener('click', () => newSpan.click());
+      document.querySelectorAll('.input-value').forEach(s => {
+        if (!s._hasClickHandler) {
+          s._hasClickHandler = true;
+          // Handler already attached via event delegation below
+        }
+      });
+      updateAll();
+    };
+
+    input.addEventListener('blur', commit);
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); commit(); }
+      if (e.key === 'Escape') {
+        const newSpan = document.createElement('span');
+        newSpan.className = 'input-value';
+        newSpan.id = id;
+        newSpan.textContent = isYear ? slider.value : (+slider.value).toFixed(1) + '%';
+        input.replaceWith(newSpan);
+      }
+    });
+  });
+});
+
+// ======================== QUICK ENTRY MODAL ========================
+
+const qeOverlay = document.getElementById('qeOverlay');
+const qeBody = document.getElementById('qeBody');
+
+// Build QE table rows
+qeBody.innerHTML = COUNTRY_DATA.map(c => `
+  <tr>
+    <td><div class="qe-country"><span class="country-dot" style="background:${c.color}"></span> ${c.name}</div></td>
+    <td><input type="number" class="qe-input" id="qe_${c.id}_year" value="2100" min="2025" max="2100" step="1"></td>
+    <td><input type="number" class="qe-input" id="qe_${c.id}_rate" value="0" min="0" max="20" step="0.5"></td>
+    <td><input type="number" class="qe-input" id="qe_${c.id}_transfer" value="0" step="1"></td>
+  </tr>`).join('');
+
+// Open modal — pre-fill with current values
+document.getElementById('quickEntryBtn').addEventListener('click', () => {
+  COUNTRY_DATA.forEach(c => {
+    document.getElementById('qe_' + c.id + '_year').value = document.getElementById(c.id + '_year').value;
+    document.getElementById('qe_' + c.id + '_rate').value = document.getElementById(c.id + '_rate').value;
+    document.getElementById('qe_' + c.id + '_transfer').value = document.getElementById(c.id + '_transfer').value;
+  });
+  qeOverlay.classList.add('open');
+  // Focus first input
+  document.getElementById('qe_' + COUNTRY_DATA[0].id + '_year').focus();
+});
+
+// Tab through QE inputs with Enter key
+qeOverlay.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    const inputs = [...qeOverlay.querySelectorAll('.qe-input')];
+    const idx = inputs.indexOf(e.target);
+    if (idx >= 0 && idx < inputs.length - 1) {
+      inputs[idx + 1].focus();
+      inputs[idx + 1].select();
+    } else {
+      // Last input — apply
+      document.getElementById('qeApplyBtn').click();
+    }
+  }
+  if (e.key === 'Escape') qeOverlay.classList.remove('open');
+});
+
+// Apply
+document.getElementById('qeApplyBtn').addEventListener('click', () => {
+  COUNTRY_DATA.forEach(c => {
+    document.getElementById(c.id + '_year').value = document.getElementById('qe_' + c.id + '_year').value;
+    document.getElementById(c.id + '_rate').value = document.getElementById('qe_' + c.id + '_rate').value;
+    document.getElementById(c.id + '_transfer').value = document.getElementById('qe_' + c.id + '_transfer').value;
+  });
+  qeOverlay.classList.remove('open');
+  updateAll();
+});
+
+// Cancel
+document.getElementById('qeCancelBtn').addEventListener('click', () => {
+  qeOverlay.classList.remove('open');
+});
+
+// Close on overlay click
+qeOverlay.addEventListener('click', e => {
+  if (e.target === qeOverlay) qeOverlay.classList.remove('open');
 });
 
 // ======================== CHARTS ========================
