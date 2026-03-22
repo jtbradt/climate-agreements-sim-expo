@@ -137,11 +137,74 @@
     .summary-table .positive { color: #dc2626; }
     .summary-table .negative { color: #16a34a; }
 
+    /* Timer */
+    .timer-bar {
+      background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius);
+      box-shadow: var(--shadow); padding: 0.6rem 1rem;
+      display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;
+    }
+    .timer-label { font-size: 0.78rem; font-weight: 600; color: var(--text-muted); white-space: nowrap; }
+    .timer-presets { display: flex; gap: 0.35rem; flex-wrap: wrap; }
+    .timer-preset {
+      padding: 0.3rem 0.65rem; font-size: 0.75rem; font-weight: 600;
+      background: #f1f5f9; border: 1px solid var(--border); border-radius: 6px;
+      cursor: pointer; color: var(--text); transition: all 0.15s;
+    }
+    .timer-preset:hover { background: #e2e8f0; }
+    .timer-preset.active { background: #2563eb; color: white; border-color: #2563eb; }
+    .timer-custom {
+      width: 52px; padding: 0.25rem 0.4rem; font-size: 0.78rem; font-weight: 600;
+      border: 1px solid var(--border); border-radius: 6px; text-align: center;
+      font-variant-numeric: tabular-nums;
+    }
+    .timer-custom:focus { outline: 2px solid #2563eb; border-color: transparent; }
+    .timer-display {
+      font-size: 2rem; font-weight: 700; font-variant-numeric: tabular-nums;
+      min-width: 90px; text-align: center; line-height: 1;
+      margin-left: auto;
+      transition: color 0.3s;
+    }
+    .timer-display.running { color: var(--text); }
+    .timer-display.warning { color: #f59e0b; }
+    .timer-display.urgent { color: #dc2626; }
+    .timer-display.done { color: #dc2626; }
+    .timer-controls { display: flex; gap: 0.35rem; }
+    .timer-ctrl-btn {
+      padding: 0.35rem 0.75rem; font-size: 0.78rem; font-weight: 600;
+      border: 1px solid var(--border); border-radius: 6px; cursor: pointer;
+      transition: all 0.15s;
+    }
+    .timer-start { background: #16a34a; color: white; border-color: #16a34a; }
+    .timer-start:hover { background: #15803d; }
+    .timer-pause { background: #f59e0b; color: white; border-color: #f59e0b; }
+    .timer-pause:hover { background: #d97706; }
+    .timer-stop { background: #f1f5f9; color: var(--text-muted); }
+    .timer-stop:hover { background: #e2e8f0; color: var(--text); }
+
+    @keyframes timer-flash {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+    .timer-display.flash { animation: timer-flash 0.6s ease-in-out infinite; }
+
+    .timer-progress-track {
+      flex-basis: 100%; height: 4px; background: #e5e7eb; border-radius: 2px;
+      overflow: hidden; order: 10;
+    }
+    .timer-progress-fill {
+      height: 100%; background: #2563eb; border-radius: 2px;
+      transition: width 0.25s linear, background-color 0.3s;
+      width: 100%;
+    }
+    .timer-progress-fill.warning { background: #f59e0b; }
+    .timer-progress-fill.urgent { background: #dc2626; }
+
     @media (max-width: 1100px) { .policy-grid { grid-template-columns: repeat(3, 1fr); } }
     @media (max-width: 700px) {
       .chart-row { grid-template-columns: 1fr; }
       .policy-grid { grid-template-columns: repeat(2, 1fr); }
       .metrics-bar { flex-direction: column; align-items: center; }
+      .timer-display { font-size: 1.5rem; min-width: 70px; margin-left: 0; }
     }
   </style>
 </head>
@@ -166,6 +229,25 @@
         <div class="policy-grid" id="policyGrid"></div>
         <div class="transfer-balance balanced" id="transferBalance">Net Transfer Balance: $0 B/yr (balanced)</div>
       </div>
+    </div>
+
+    <!-- Timer -->
+    <div class="timer-bar">
+      <span class="timer-label">Timer</span>
+      <div class="timer-presets">
+        <button class="timer-preset" data-min="1">1m</button>
+        <button class="timer-preset" data-min="2">2m</button>
+        <button class="timer-preset" data-min="4">4m</button>
+        <button class="timer-preset" data-min="5">5m</button>
+        <button class="timer-preset" data-min="8">8m</button>
+      </div>
+      <input type="number" class="timer-custom" id="timerCustom" placeholder="min" min="1" max="99">
+      <div class="timer-controls">
+        <button class="timer-ctrl-btn timer-start" id="timerStartBtn">Start</button>
+        <button class="timer-ctrl-btn timer-stop" id="timerResetBtn">Reset</button>
+      </div>
+      <div class="timer-display" id="timerDisplay">--:--</div>
+      <div class="timer-progress-track"><div class="timer-progress-fill" id="timerProgress"></div></div>
     </div>
 
     <!-- Headline metrics -->
@@ -209,7 +291,7 @@
     <div class="tab-panel" id="tab-costs">
       <div class="chart-row">
         <div class="card">
-          <div class="card-header">Climate Damages from Post-2010 Warming</div>
+          <div class="card-header">Climate Damages from Post-2024 Warming</div>
           <div class="card-body"><div class="chart-container"><canvas id="damagesChart"></canvas></div></div>
         </div>
         <div class="card">
@@ -243,40 +325,47 @@
 
 <script>
 // ======================== COUNTRY DATA ========================
+// GDP per capita: World Bank WDI (NY.GDP.PCAP.CD), 2024 current US$.
+// Population: World Bank (SP.POP.TOTL), 2024.
+// Baseline temperature & Tconv: Burke, Hsiang & Miguel (2015) replication package.
+// Emissions: EDGAR 2025 Report / IEA Global Energy Review 2025, 2024 data.
+// Growth rates: calibrated long-run assumptions informed by IMF WEO and OECD projections.
+
 const COUNTRY_DATA = [
-  { id: "us",  name: "United States",       pop0: 309e6,  gdpCap0: 43952, baseTemp: 13.6,
-    gdpGrowth: 0.016, popGrowth: 0.005, tconv: 1.32,
+  { id: "us",  name: "United States",       pop0: 340e6,  gdpCap0: 84534, baseTemp: 13.6,
+    gdpGrowth: 0.015, popGrowth: 0.004, tconv: 1.32,
     emissions0: 5.9, emisGrowth: -0.005,
     costParams: { c1: 200, c2: 50 }, color: "#2563eb" },
-  { id: "eu",  name: "European Union",      pop0: 316e6,  gdpCap0: 33168, baseTemp: 11.2,
-    gdpGrowth: 0.016, popGrowth: 0.002, tconv: 1.14,
+  { id: "eu",  name: "European Union",      pop0: 450e6,  gdpCap0: 43305, baseTemp: 11.2,
+    gdpGrowth: 0.013, popGrowth: -0.001, tconv: 1.14,
     emissions0: 3.2, emisGrowth: -0.020,
     costParams: { c1: 200, c2: 50 }, color: "#7c3aed" },
-  { id: "cn",  name: "China",               pop0: 1338e6, gdpCap0: 2870,  baseTemp: 14.2,
-    gdpGrowth: 0.085, popGrowth: -0.005, tconv: 1.29,
+  { id: "cn",  name: "China",               pop0: 1409e6, gdpCap0: 13303, baseTemp: 14.2,
+    gdpGrowth: 0.035, popGrowth: -0.003, tconv: 1.29,
     emissions0: 15.5, emisGrowth: 0.005,
     costParams: { c1: 100, c2: 25 }, color: "#e11d48" },
-  { id: "in",  name: "India",               pop0: 1206e6, gdpCap0: 1032,  baseTemp: 25.7,
-    gdpGrowth: 0.042, popGrowth: 0.003, tconv: 1.14,
-    emissions0: 4.4, emisGrowth: 0.035,
+  { id: "in",  name: "India",               pop0: 1451e6, gdpCap0: 2695,  baseTemp: 25.7,
+    gdpGrowth: 0.050, popGrowth: 0.007, tconv: 1.14,
+    emissions0: 4.4, emisGrowth: 0.025,
     costParams: { c1: 80, c2: 20 }, color: "#f59e0b" },
-  { id: "ssa", name: "Sub-Saharan Africa",  pop0: 384e6,  gdpCap0: 1338,  baseTemp: 22.7,
-    gdpGrowth: 0.009, popGrowth: 0.015, tconv: 1.12,
-    emissions0: 2.4, emisGrowth: 0.030,
+  { id: "ssa", name: "Sub-Saharan Africa",  pop0: 1291e6, gdpCap0: 1533,  baseTemp: 22.7,
+    gdpGrowth: 0.025, popGrowth: 0.024, tconv: 1.12,
+    emissions0: 2.4, emisGrowth: 0.025,
     costParams: { c1: 80, c2: 15 }, color: "#16a34a" },
-  { id: "oil", name: "Oil States",          pop0: 144e6,  gdpCap0: 7185,  baseTemp: 19.8,
-    gdpGrowth: 0.001, popGrowth: 0.007, tconv: 1.42,
-    emissions0: 2.8, emisGrowth: 0.020,
+  { id: "oil", name: "Oil States",          pop0: 189e6,  gdpCap0: 14339, baseTemp: 19.8,
+    gdpGrowth: 0.015, popGrowth: 0.010, tconv: 1.42,
+    emissions0: 2.8, emisGrowth: 0.015,
     costParams: { c1: 250, c2: 75 }, color: "#64748b" }
 ];
 
 // ======================== CONSTANTS ========================
-const BASE_YEAR = 2010;
+const BASE_YEAR = 2024;
 const END_YEAR = 2100;
-const N_YEARS = END_YEAR - BASE_YEAR + 1;
+const N_YEARS = END_YEAR - BASE_YEAR + 1; // 77
 const YEARS = Array.from({length: N_YEARS}, (_, i) => BASE_YEAR + i);
 
-const CONC_BASE = 390.42;
+// Atmospheric CO2 concentration in 2024 (ppm), from NOAA/GML
+const CONC_BASE = 427.0;
 const CONC_PREINDUSTRIAL = 297.05671;
 const CLIMATE_SENSITIVITY = 2.36701601;
 const CONC_INTERCEPT = 0.989269259844167;
@@ -363,6 +452,146 @@ function computeAbatementCosts(country, reductionYear, reductionRate) {
   return cumCosts;
 }
 
+// ======================== TIMER ========================
+
+const timerState = { total: 0, remaining: 0, interval: null, running: false };
+const timerDisplay = document.getElementById('timerDisplay');
+const timerProgress = document.getElementById('timerProgress');
+const timerStartBtn = document.getElementById('timerStartBtn');
+const timerCustomInput = document.getElementById('timerCustom');
+
+function formatTime(sec) {
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  return m.toString().padStart(2, '0') + ':' + s.toString().padStart(2, '0');
+}
+
+function setTimerMinutes(min) {
+  stopTimer();
+  timerState.total = min * 60;
+  timerState.remaining = timerState.total;
+  timerDisplay.textContent = formatTime(timerState.remaining);
+  timerDisplay.className = 'timer-display';
+  timerProgress.style.width = '100%';
+  timerProgress.className = 'timer-progress-fill';
+  timerStartBtn.textContent = 'Start';
+  timerStartBtn.className = 'timer-ctrl-btn timer-start';
+  // highlight active preset
+  document.querySelectorAll('.timer-preset').forEach(b => b.classList.remove('active'));
+}
+
+function tickTimer() {
+  timerState.remaining--;
+  if (timerState.remaining <= 0) {
+    timerState.remaining = 0;
+    stopTimer();
+    timerDisplay.textContent = '00:00';
+    timerDisplay.className = 'timer-display done flash';
+    timerProgress.style.width = '0%';
+    timerStartBtn.textContent = 'Start';
+    timerStartBtn.className = 'timer-ctrl-btn timer-start';
+    // audio chime using Web Audio API
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      [0, 200, 400].forEach(delay => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.frequency.value = 880;
+        osc.type = 'sine';
+        gain.gain.setValueAtTime(0.3, ctx.currentTime + delay/1000);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay/1000 + 0.3);
+        osc.start(ctx.currentTime + delay/1000);
+        osc.stop(ctx.currentTime + delay/1000 + 0.3);
+      });
+    } catch(e) {}
+    return;
+  }
+  timerDisplay.textContent = formatTime(timerState.remaining);
+  const pct = (timerState.remaining / timerState.total) * 100;
+  timerProgress.style.width = pct + '%';
+
+  if (timerState.remaining <= 10) {
+    timerDisplay.className = 'timer-display urgent flash';
+    timerProgress.className = 'timer-progress-fill urgent';
+  } else if (timerState.remaining <= 30) {
+    timerDisplay.className = 'timer-display warning';
+    timerProgress.className = 'timer-progress-fill warning';
+  } else {
+    timerDisplay.className = 'timer-display running';
+    timerProgress.className = 'timer-progress-fill';
+  }
+}
+
+function startTimer() {
+  if (timerState.total === 0) return;
+  if (timerState.remaining <= 0) {
+    timerState.remaining = timerState.total;
+  }
+  timerState.running = true;
+  timerDisplay.className = 'timer-display running';
+  timerStartBtn.textContent = 'Pause';
+  timerStartBtn.className = 'timer-ctrl-btn timer-pause';
+  timerState.interval = setInterval(tickTimer, 1000);
+}
+
+function pauseTimer() {
+  timerState.running = false;
+  clearInterval(timerState.interval);
+  timerStartBtn.textContent = 'Resume';
+  timerStartBtn.className = 'timer-ctrl-btn timer-start';
+}
+
+function stopTimer() {
+  timerState.running = false;
+  clearInterval(timerState.interval);
+  timerState.interval = null;
+}
+
+// Preset buttons
+document.querySelectorAll('.timer-preset').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const min = +btn.dataset.min;
+    setTimerMinutes(min);
+    document.querySelectorAll('.timer-preset').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    timerCustomInput.value = '';
+  });
+});
+
+// Custom input
+timerCustomInput.addEventListener('change', () => {
+  const min = +timerCustomInput.value;
+  if (min > 0 && min <= 99) {
+    setTimerMinutes(min);
+  }
+});
+
+// Start/Pause toggle
+timerStartBtn.addEventListener('click', () => {
+  if (timerState.running) {
+    pauseTimer();
+  } else {
+    startTimer();
+  }
+});
+
+// Reset
+document.getElementById('timerResetBtn').addEventListener('click', () => {
+  stopTimer();
+  if (timerState.total > 0) {
+    timerState.remaining = timerState.total;
+    timerDisplay.textContent = formatTime(timerState.remaining);
+  } else {
+    timerDisplay.textContent = '--:--';
+  }
+  timerDisplay.className = 'timer-display';
+  timerProgress.style.width = '100%';
+  timerProgress.className = 'timer-progress-fill';
+  timerStartBtn.textContent = 'Start';
+  timerStartBtn.className = 'timer-ctrl-btn timer-start';
+});
+
 // ======================== TABS ========================
 
 document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -389,7 +618,7 @@ COUNTRY_DATA.forEach(c => {
     <div class="input-group">
       <label>Reduction Start Year</label>
       <div class="input-row">
-        <input type="range" id="${c.id}_year" min="2015" max="2100" value="2100" step="1">
+        <input type="range" id="${c.id}_year" min="2025" max="2100" value="2100" step="1">
         <span class="input-value" id="${c.id}_year_val">2100</span>
       </div>
     </div>

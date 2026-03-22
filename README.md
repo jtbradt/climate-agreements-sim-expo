@@ -8,7 +8,7 @@ An interactive, browser-based tool for simulating international climate negotiat
 
 Students set three policy parameters for each of six country groups:
 
-1. **Emission reduction start year** (2015--2100)
+1. **Emission reduction start year** (2025--2100)
 2. **Annual emission reduction rate** (0--20%)
 3. **Net financial transfer** ($B/yr; positive = paying, negative = receiving)
 
@@ -20,62 +20,73 @@ The tool instantly computes and visualizes:
 
 ## Country Groups
 
-| Group | Representative Countries | Pop (M, 2010) | GDP/cap (2010 $) | Baseline Temp (°C) |
-|---|---|---|---|---|
-| **United States** | USA | 309 | 43,952 | 13.6 |
-| **European Union** | DEU, FRA, GBR, ITA, ESP | 316 | 33,168 | 11.2 |
-| **China** | CHN | 1,338 | 2,870 | 14.2 |
-| **India** | IND | 1,206 | 1,032 | 25.7 |
-| **Sub-Saharan Africa** | NGA, ETH, KEN, TZA, ZAF | 384 | 1,338 | 22.7 |
-| **Oil States** | SAU, ARE, KWT, IRQ, IRN | 144 | 7,185 | 19.8 |
+All economic values are in **2024 current (nominal) US dollars** unless otherwise noted. Base year for all projections is **2024**.
 
-Multi-country groups use population-weighted averages for all parameters.
+| Group | Representative Countries | Pop (M) | GDP/cap ($) | Baseline Temp (°C) | Tconv |
+|---|---|---|---|---|---|
+| **United States** | USA | 340 | 84,534 | 13.6 | 1.32 |
+| **European Union** | EU-27 | 450 | 43,305 | 11.2 | 1.14 |
+| **China** | CHN | 1,409 | 13,303 | 14.2 | 1.29 |
+| **India** | IND | 1,451 | 2,695 | 25.7 | 1.14 |
+| **Sub-Saharan Africa** | World Bank SSF aggregate | 1,291 | 1,533 | 22.7 | 1.12 |
+| **Oil States** | SAU, ARE, KWT, IRQ, IRN | 189 | 14,339 | 19.8 | 1.42 |
+
+Oil States GDP per capita is a population-weighted average of the five constituent countries.
 
 ## Data Sources
 
-### Burke, Hsiang & Miguel (2015) Replication Package
+### GDP and Population
 
-The primary data source is the replication package for:
+**Source:** World Bank World Development Indicators (WDI), 2024 data (last updated 2025-02-24).
+
+- **GDP per capita:** Indicator `NY.GDP.PCAP.CD` — GDP per capita in current US dollars, 2024. The EU uses the World Bank's EU-27 aggregate (code `EUU`). Sub-Saharan Africa uses the World Bank regional aggregate (code `SSF`). Oil States is the population-weighted average of Saudi Arabia ($35,122), UAE ($50,274), Kuwait ($32,718), Iraq ($6,074), and Iran ($5,190).
+- **Population:** Indicator `SP.POP.TOTL`, 2024.
+
+### GDP Growth Rates
+
+Long-run BAU growth rates are calibrated assumptions informed by IMF World Economic Outlook projections and OECD long-term baseline scenarios. These represent average annual per capita GDP growth rates projected forward from 2024, absent climate damages:
+
+| Group | Growth Rate | Rationale |
+|---|---|---|
+| United States | 1.5%/yr | Mature economy, historical trend ~1.5-2% |
+| European Union | 1.3%/yr | Mature economy, aging population |
+| China | 3.5%/yr | Decelerating from ~5% current; convergence dynamics |
+| India | 5.0%/yr | Rapid industrialization, demographic dividend |
+| Sub-Saharan Africa | 2.5%/yr | Young population, low base, institutional constraints |
+| Oil States | 1.5%/yr | Diversification efforts, volatile oil revenues |
+
+### Baseline Temperature and Temperature Conversion Factors
+
+**Source:** Burke, Hsiang & Miguel (2015) replication package.
 
 > Burke, M., Hsiang, S. M., & Miguel, E. (2015). Global non-linear effect of temperature on economic production. *Nature*, 527(7577), 235--239.
 
-From this package we extract:
-
-- **Baseline GDP per capita** — Country-level GDP per capita from the World Development Indicators (WDI), averaged over 1980--2010. Stored in `GrowthClimateDataset.csv`.
-- **Population** — Country populations circa 2010, from the same dataset.
-- **Population-weighted mean temperature** — Annual average temperature weighted by sub-national population distribution, from the University of Delaware gridded temperature dataset. Variable `UDel_temp_popweight` in `GrowthClimateDataset.csv`, averaged over 1980--2010.
-- **Historical GDP growth rates** — Mean annual per capita GDP growth from WDI (`growthWDI`), averaged 1980--2010.
-- **Temperature conversion factors (Tconv)** — From `CountryTempChange_RCP85.csv`. These factors translate global mean temperature change into country-specific local temperature change, derived from the CMIP5 RCP8.5 multi-model ensemble mean. Computed as the ratio of population-weighted country-level warming to global mean warming. For example, Tconv = 1.42 for Oil States means they warm 42% faster than the global average.
-- **Damage function coefficients** — The quadratic relationship between temperature and GDP growth from Burke et al.'s pooled regression: `growth_effect(T) = 0.0127*T - 0.0005*T²`.
+- **Population-weighted mean temperature** — Annual average temperature weighted by sub-national population distribution, from the University of Delaware gridded temperature dataset (`UDel_temp_popweight` in `GrowthClimateDataset.csv`), averaged over 1980--2010. Multi-country groups use population-weighted averages.
+- **Temperature conversion factors (Tconv)** — From `CountryTempChange_RCP85.csv`. These translate global mean temperature change into country-specific local temperature change, derived from the CMIP5 RCP8.5 multi-model ensemble mean. Computed as the ratio of population-weighted country-level warming to global mean warming. For example, Tconv = 1.42 for Oil States means they warm 42% faster than the global average.
+- **Damage function coefficients** — The quadratic relationship between temperature and GDP growth from Burke et al.'s pooled regression (no lags): `growth_effect(T) = 0.0127*T - 0.0005*T²`.
 
 ### Emissions Data
 
-Baseline GHG emissions (Gt CO2e/year) and business-as-usual growth rates are drawn from:
+**Source:** EDGAR 2025 Report (Emissions Database for Global Atmospheric Research, European Commission Joint Research Centre), IEA Global Energy Review 2025, and Climate Action Tracker country assessments.
 
-- **EDGAR 2025 Report** (Emissions Database for Global Atmospheric Research, European Commission Joint Research Centre) — 2024 country-level total GHG emissions.
-- **IEA Global Energy Review 2025** — Regional emissions trends and growth rates.
-- **Climate Action Tracker** — Country-level current-policy emissions projections.
+All emissions are total GHG emissions in **Gt CO2e/year**, 2024 data.
 
-| Group | Emissions (Gt CO2e, 2024) | BAU Growth Rate | Source Notes |
+| Group | Emissions (Gt CO2e) | BAU Growth Rate | Source Notes |
 |---|---|---|---|
 | United States | 5.9 | -0.5%/yr | Market-driven decarbonization, partially offset by policy uncertainty |
 | European Union | 3.2 | -2.0%/yr | EU ETS + Fit for 55 regulations driving continued decline |
 | China | 15.5 | +0.5%/yr | Near-peak; massive renewable deployment offsetting coal |
-| India | 4.4 | +3.5%/yr | Strong GDP growth and industrialization driving demand |
-| Sub-Saharan Africa | 2.4 | +3.0%/yr | Low base, rapid population growth and urbanization |
-| Oil States | 2.8 | +2.0%/yr | Domestic consumption growth, petrochemical expansion |
+| India | 4.4 | +2.5%/yr | Strong GDP growth and industrialization driving demand |
+| Sub-Saharan Africa | 2.4 | +2.5%/yr | Low base, rapid population growth and urbanization |
+| Oil States | 2.8 | +1.5%/yr | Domestic consumption growth, petrochemical expansion |
 
-Sub-Saharan Africa and Oil States aggregates are summed from individual country EDGAR entries.
+Sub-Saharan Africa and Oil States aggregates are summed from individual country EDGAR entries. Emissions growth rates are calibrated BAU assumptions (no new policies beyond current implementation) informed by IEA and Climate Action Tracker projections.
 
-### Emissions-to-Concentration Model
+### Atmospheric CO2 Concentration
 
-The relationship between global GHG emissions and atmospheric CO2 concentration is estimated via OLS regression on historical data (2000--2024):
-
-```
-ΔCO2_concentration = 0.9893 + 0.0245 × total_emissions_lag
-```
-
-This simple linear model is applied iteratively to accumulate atmospheric concentrations from a base of 390.42 ppm in 2010.
+- **Base concentration (2024):** 427.0 ppm, from NOAA Global Monitoring Laboratory.
+- **Pre-industrial concentration:** 297.06 ppm, from Burke et al. (2015).
+- **Emissions-to-concentration model:** OLS regression on historical data (2000--2024): `ΔCO2 = 0.9893 + 0.0245 × total_emissions_lag`. Applied iteratively from the 2024 base.
 
 ## Methodology
 
@@ -84,7 +95,7 @@ This simple linear model is applied iteratively to accumulate atmospheric concen
 For each country, business-as-usual emissions grow exponentially from the base year:
 
 ```
-emissions_BAU(t) = emissions_0 × (1 + g)^(t - 2010)
+emissions_BAU(t) = emissions_0 × (1 + g)^(t - 2024)
 ```
 
 When a reduction policy is active (starting at `reduction_year` with annual rate `r`):
@@ -108,7 +119,7 @@ where `λ = 2.367` is the climate sensitivity parameter and `CO2_preindustrial =
 Each country experiences warming proportional to their temperature conversion factor:
 
 ```
-T_local(t) = T_base + (T_global(t) - T_global(2010)) × Tconv
+T_local(t) = T_base + (T_global(t) - T_global(2024)) × Tconv
 ```
 
 This reflects that high-latitude regions warm faster than the tropics, and continental interiors warm faster than coastal areas.
@@ -150,6 +161,8 @@ where `A(t) = 1 - (1-r)^(years_since_start)` is the cumulative abatement fractio
 | Sub-Saharan Africa | 80 | 15 | Good renewable resources, but financing constraints |
 | Oil States | 250 | 75 | Structural fossil fuel dependence on both supply and demand side |
 
+These parameters are pedagogical calibrations, not sourced from empirical marginal abatement cost curves.
+
 ### Financial Transfers
 
 Each country group can set a net annual transfer in $B/yr. Positive values indicate payments into a climate fund; negative values indicate receipts. The tool displays whether transfers are balanced (sum to zero) across all groups.
@@ -176,10 +189,11 @@ The simulation runs entirely client-side as a single HTML file with no server de
 │   ├── ghg_emissions_baseline.csv  # Legacy baseline emissions (original 3-group model)
 │   ├── gdp_baseline.csv     # Legacy baseline GDP (original 3-group model)
 │   └── pop_baseline.csv     # Legacy baseline population (original 3-group model)
+├── FACILITATION_GUIDE.md    # Instructor guide for classroom exercise
 └── README.md
 ```
 
-The `data/` CSV files are from the original 3-group version of the simulation and are retained as reference. The current 6-group model derives its parameters from the BHM replication package and external emissions sources as documented above.
+The `data/` CSV files are from the original 3-group version of the simulation and are retained as reference. The current 6-group model derives its parameters from the sources documented above.
 
 ## Author
 
@@ -191,3 +205,5 @@ Jacob Bradt (jacob.bradt@mccombs.utexas.edu)
 - EDGAR — Emissions Database for Global Atmospheric Research (2025). *GHG Emissions of All World Countries*. European Commission, Joint Research Centre.
 - IEA (2025). *Global Energy Review: CO2 Emissions*.
 - Climate Action Tracker (2025). Country assessments. https://climateactiontracker.org/
+- World Bank (2025). World Development Indicators. https://data.worldbank.org/
+- NOAA Global Monitoring Laboratory (2025). Trends in Atmospheric Carbon Dioxide. https://gml.noaa.gov/ccgg/trends/

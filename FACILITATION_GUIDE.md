@@ -222,8 +222,8 @@ This ensures every delegation meets at least two others, and the critical pairin
 - Bang a gavel (or just a book on the desk) to call order.
 
 **Time signals:**
-- Use a visible countdown timer (phone timer on the projector, or a physical clock)
-- Give warnings at 2 minutes and 30 seconds before each phase ends
+- Use the built-in countdown timer in the simulation tool (preset buttons for 1, 2, 4, 5, 8 min)
+- Give warnings at 2 minutes and 30 seconds before each phase ends (the timer flashes yellow at 30s, red at 10s, and chimes when done)
 - Be strict on time — real COPs have deadlines, and the pressure is pedagogically useful
 
 ---
@@ -290,6 +290,8 @@ Give all teams access to the tool on their own devices. This changes the exercis
 
 Print and cut these sheets. Distribute **one per team**. Each team should only see their own sheet.
 
+All dollar figures are in **2024 US dollars** (World Bank WDI). Emissions data from EDGAR/IEA (2024). Temperature and vulnerability data from Burke, Hsiang & Miguel (2015).
+
 ---
 
 ### CONFIDENTIAL BRIEFING: United States
@@ -297,9 +299,9 @@ Print and cut these sheets. Distribute **one per team**. Each team should only s
 **Your delegation represents the United States of America.**
 
 **Economic Profile:**
-- GDP per capita: ~$44,000 (highest among all delegations)
-- Economic growth rate: ~1.6% per year
-- Population: 309 million
+- GDP per capita: ~$85,000 (highest among all delegations)
+- Economic growth rate: ~1.5% per year
+- Population: 340 million
 
 **Emissions Profile:**
 - Current emissions: 5.9 Gt CO2e/year — the second-largest emitter
@@ -326,12 +328,12 @@ Print and cut these sheets. Distribute **one per team**. Each team should only s
 
 ### CONFIDENTIAL BRIEFING: European Union
 
-**Your delegation represents the European Union (Germany, France, UK, Italy, Spain and others).**
+**Your delegation represents the European Union (27 member states, including Germany, France, Italy, Spain and others).**
 
 **Economic Profile:**
-- GDP per capita: ~$33,000
-- Economic growth rate: ~1.6% per year
-- Population: 316 million
+- GDP per capita: ~$43,000
+- Economic growth rate: ~1.3% per year
+- Population: 450 million
 
 **Emissions Profile:**
 - Current emissions: 3.2 Gt CO2e/year
@@ -363,9 +365,9 @@ Print and cut these sheets. Distribute **one per team**. Each team should only s
 **Your delegation represents the People's Republic of China.**
 
 **Economic Profile:**
-- GDP per capita: ~$2,900 (still a developing country by per-capita measures)
-- Economic growth rate: ~8.5% per year — the fastest-growing major economy
-- Population: 1.338 billion — the world's largest
+- GDP per capita: ~$13,300 (upper-middle income, but still far below the US and EU)
+- Economic growth rate: ~3.5% per year — slowing from its era of hypergrowth but still rapid
+- Population: 1.41 billion — the world's second-largest (recently surpassed by India)
 
 **Emissions Profile:**
 - Current emissions: 15.5 Gt CO2e/year — **by far the world's largest emitter**
@@ -383,7 +385,7 @@ Print and cut these sheets. Distribute **one per team**. Each team should only s
 - Your rapid growth means every year of delay locks in more fossil infrastructure
 
 **Negotiating Priorities:**
-- Emphasize your **per-capita emissions are still far below** the US and EU
+- Emphasize your **per-capita emissions are still well below** the US and EU despite being the largest total emitter
 - Argue that developed countries bear historical responsibility and should act first
 - You are willing to make commitments but want a later start date to protect growth
 - Resist being treated as a "developed country" for purposes of transfer payments — you should be a recipient, not a payer
@@ -397,14 +399,14 @@ Print and cut these sheets. Distribute **one per team**. Each team should only s
 **Your delegation represents the Republic of India.**
 
 **Economic Profile:**
-- GDP per capita: ~$1,000 (one of the lowest among delegations)
-- Economic growth rate: ~4.2% per year — rapid growth lifting hundreds of millions from poverty
-- Population: 1.206 billion
+- GDP per capita: ~$2,700 (one of the lowest among delegations)
+- Economic growth rate: ~5.0% per year — the fastest-growing major economy, lifting hundreds of millions from poverty
+- Population: 1.45 billion — the world's most populous country
 
 **Emissions Profile:**
 - Current emissions: 4.4 Gt CO2e/year
-- Trend: Emissions are growing rapidly (~3.5%/year) as industrialization and urbanization accelerate
-- Your **per-capita emissions are tiny** — roughly 1/12th of the US
+- Trend: Emissions are growing rapidly (~2.5%/year) as industrialization and urbanization accelerate
+- Your **per-capita emissions are tiny** — roughly 1/30th of the US
 
 **Climate Vulnerability:**
 - Your average temperature (25.7°C) is **far above the economic optimum**
@@ -431,13 +433,13 @@ Print and cut these sheets. Distribute **one per team**. Each team should only s
 **Your delegation represents Sub-Saharan Africa (Nigeria, Ethiopia, Kenya, Tanzania, South Africa and others).**
 
 **Economic Profile:**
-- GDP per capita: ~$1,300
-- Economic growth rate: ~0.9% per year — the slowest among all delegations
-- Population: 384 million (and growing rapidly)
+- GDP per capita: ~$1,500 (the lowest among all delegations)
+- Economic growth rate: ~2.5% per year
+- Population: 1.29 billion (and growing rapidly — the fastest population growth of any delegation)
 
 **Emissions Profile:**
 - Current emissions: 2.4 Gt CO2e/year — **the smallest emitter by far**
-- Trend: Emissions are growing (~3%/year) from a very low base as economies develop
+- Trend: Emissions are growing (~2.5%/year) from a very low base as economies develop
 - Your per-capita emissions are negligible compared to developed countries
 
 **Climate Vulnerability:**
@@ -467,13 +469,13 @@ Print and cut these sheets. Distribute **one per team**. Each team should only s
 **Your delegation represents the Oil States (Saudi Arabia, UAE, Kuwait, Iraq, Iran).**
 
 **Economic Profile:**
-- GDP per capita: ~$7,200 (varies widely — Gulf states are wealthy, others less so)
-- Economic growth rate: ~0.1% per year — the slowest of any delegation
-- Population: 144 million
+- GDP per capita: ~$14,300 (varies widely — Gulf states like Saudi Arabia ~$35,000 and UAE ~$50,000 are wealthy; Iraq ~$6,000 and Iran ~$5,200 are much poorer)
+- Economic growth rate: ~1.5% per year
+- Population: 189 million
 
 **Emissions Profile:**
 - Current emissions: 2.8 Gt CO2e/year
-- Trend: Emissions are growing (~2%/year) due to domestic consumption growth and petrochemical expansion
+- Trend: Emissions are growing (~1.5%/year) due to domestic consumption growth and petrochemical expansion
 - Your per-capita emissions are very high (especially Gulf states)
 
 **Climate Vulnerability:**
