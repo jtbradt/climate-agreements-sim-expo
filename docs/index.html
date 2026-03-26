@@ -303,7 +303,7 @@
       </div>
       <div class="metric">
         <div class="metric-value" id="metricAbatement">--</div>
-        <div class="metric-label">Global Abatement Cost ($B cumul.)</div>
+        <div class="metric-label">Global Abatement Cost ($B, NPV)</div>
       </div>
     </div>
 
@@ -336,7 +336,7 @@
           <div class="card-body"><div class="chart-container"><canvas id="damagesChart"></canvas></div></div>
         </div>
         <div class="card">
-          <div class="card-header">Cumulative Abatement Costs</div>
+          <div class="card-header">Cumulative Abatement Costs (NPV)</div>
           <div class="card-body"><div class="chart-container"><canvas id="abatementChart"></canvas></div></div>
         </div>
       </div>
@@ -356,7 +356,7 @@
               <tr>
                 <th>Country</th>
                 <th class="num">Abatement Cost ($B, NPV)</th>
-                <th class="num">Cumul. Transfers ($B)</th>
+                <th class="num">Transfers ($B, NPV)</th>
                 <th class="num">Climate Damages (% GDP/cap, 2100)</th>
               </tr>
             </thead>
@@ -372,7 +372,7 @@
                 <tr>
                   <th>Country</th>
                   <th class="num">Abatement Cost ($B, NPV)</th>
-                  <th class="num">Cumul. Transfers ($B)</th>
+                  <th class="num">Transfers ($B, NPV)</th>
                   <th class="num">Avoided Damages ($B, NPV)</th>
                   <th class="num">Net Benefit ($B, NPV)</th>
                 </tr>
@@ -929,10 +929,17 @@ const damagesChart = new Chart(document.getElementById('damagesChart'), makeConf
 ));
 
 const abatementChart = new Chart(document.getElementById('abatementChart'), makeConfig(
-  'Cumulative Abatement Costs ($B)',
+  'Cumulative Abatement Costs ($B, NPV)',
   COUNTRY_DATA.map(c => ({ label: c.name, data: new Array(N_YEARS).fill(0), borderColor: c.color, backgroundColor: 'transparent' })),
   { ticks: { callback: v => '$' + v.toLocaleString() } }
 ));
+
+// Pre-compute NPV discount factor sum for transfers (constant annual payment)
+const transferNPV_factor = (() => {
+  let sum = 0;
+  for (let i = 0; i < N_YEARS; i++) sum += Math.pow(1 + DISCOUNT_RATE, -i);
+  return sum;
+})();
 
 // ======================== SUMMARY TABLE ========================
 
@@ -965,26 +972,26 @@ function updateSummaryTable(policies, policyTemp) {
     const p = policies[c.id];
     const { cumCostsDiscounted } = computeAbatementCosts(c, p.year, p.rate);
     const abateNPV = cumCostsDiscounted[N_YEARS - 1];
-    const cumTransfer = p.transfer * (END_YEAR - BASE_YEAR);
+    const transferNPV = p.transfer * transferNPV_factor;
     const damages = computeDamages(c, policyTemp);
     const dmg2100 = damages[N_YEARS - 1];
     // Debrief: NPV avoided damages
     const policyDollarDmg = computeCumulativeDollarDamages(c, policyTemp);
     const avoidedDamages = bauDollarDamages[c.id] - policyDollarDmg;
-    const netBenefit = avoidedDamages - abateNPV - cumTransfer;
+    const netBenefit = avoidedDamages - abateNPV - transferNPV;
 
-    return { name: c.name, color: c.color, abateNPV, cumTransfer, dmg2100, avoidedDamages, netBenefit };
+    return { name: c.name, color: c.color, abateNPV, transferNPV, dmg2100, avoidedDamages, netBenefit };
   });
 
   let totAbate = 0, totTransfer = 0, totAvoided = 0, totBenefit = 0;
-  rows.forEach(r => { totAbate += r.abateNPV; totTransfer += r.cumTransfer; totAvoided += r.avoidedDamages; totBenefit += r.netBenefit; });
+  rows.forEach(r => { totAbate += r.abateNPV; totTransfer += r.transferNPV; totAvoided += r.avoidedDamages; totBenefit += r.netBenefit; });
 
   // Main summary table (visible during negotiation)
   tbody.innerHTML = rows.map(r => `
     <tr>
       <td><div class="country-cell"><span class="country-dot" style="background:${r.color}"></span> ${r.name}</div></td>
       <td class="num">${formatDollars(r.abateNPV)}</td>
-      <td class="num ${r.cumTransfer > 0.5 ? 'positive' : r.cumTransfer < -0.5 ? 'negative' : ''}">${formatDollars(r.cumTransfer)}</td>
+      <td class="num ${r.transferNPV > 0.5 ? 'positive' : r.transferNPV < -0.5 ? 'negative' : ''}">${formatDollars(r.transferNPV)}</td>
       <td class="num ${r.dmg2100 < -0.001 ? 'positive' : r.dmg2100 > 0.001 ? 'negative' : ''}">${(r.dmg2100 * 100).toFixed(1)}%</td>
     </tr>`).join('') + `
     <tr>
@@ -999,7 +1006,7 @@ function updateSummaryTable(policies, policyTemp) {
     <tr>
       <td><div class="country-cell"><span class="country-dot" style="background:${r.color}"></span> ${r.name}</div></td>
       <td class="num">${formatDollars(r.abateNPV)}</td>
-      <td class="num ${r.cumTransfer > 0.5 ? 'positive' : r.cumTransfer < -0.5 ? 'negative' : ''}">${formatDollars(r.cumTransfer)}</td>
+      <td class="num ${r.transferNPV > 0.5 ? 'positive' : r.transferNPV < -0.5 ? 'negative' : ''}">${formatDollars(r.transferNPV)}</td>
       <td class="num ${r.avoidedDamages > 0.5 ? 'negative' : r.avoidedDamages < -0.5 ? 'positive' : ''}">${formatDollars(r.avoidedDamages)}</td>
       <td class="num ${r.netBenefit > 0.5 ? 'negative' : r.netBenefit < -0.5 ? 'positive' : ''}">${formatDollars(r.netBenefit)}</td>
     </tr>`).join('') + `
@@ -1068,12 +1075,12 @@ function updateAll() {
   });
   damagesChart.update();
 
-  // 4. Abatement costs (chart shows undiscounted cumulative)
+  // 4. Abatement costs (chart shows discounted NPV cumulative)
   const totalAbate = new Array(N_YEARS).fill(0);
   COUNTRY_DATA.forEach((c, ci) => {
-    const { cumCosts } = computeAbatementCosts(c, policies[c.id].year, policies[c.id].rate);
-    abatementChart.data.datasets[ci].data = cumCosts;
-    for (let i = 0; i < N_YEARS; i++) totalAbate[i] += cumCosts[i];
+    const { cumCostsDiscounted } = computeAbatementCosts(c, policies[c.id].year, policies[c.id].rate);
+    abatementChart.data.datasets[ci].data = cumCostsDiscounted;
+    for (let i = 0; i < N_YEARS; i++) totalAbate[i] += cumCostsDiscounted[i];
   });
   abatementChart.update();
 
