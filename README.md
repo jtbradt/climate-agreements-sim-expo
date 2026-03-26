@@ -203,6 +203,13 @@ The simulation runs entirely client-side as a single HTML file with no server de
 ├── docs/
 │   ├── index.html          # Complete simulation app (single file)
 │   └── slides.html         # Briefing slides for classroom projection (2 slides)
+├── briefings/              # Confidential country briefing sheets (1 per team)
+│   ├── united-states.md
+│   ├── european-union.md
+│   ├── china.md
+│   ├── india.md
+│   ├── sub-saharan-africa.md
+│   └── oil-states.md
 ├── data/
 │   ├── BurkeHsiangMiguel2015_Replication.zip   # BHM replication package
 │   ├── co2_conc.csv         # Historical CO2 concentrations
