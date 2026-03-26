@@ -210,17 +210,13 @@ The simulation runs entirely client-side as a single HTML file with no server de
 │   ├── india.md
 │   ├── sub-saharan-africa.md
 │   └── oil-states.md
-├── data/
-│   ├── BurkeHsiangMiguel2015_Replication.zip   # BHM replication package
-│   ├── co2_conc.csv         # Historical CO2 concentrations
-│   ├── ghg_emissions_baseline.csv  # Legacy baseline emissions (original 3-group model)
-│   ├── gdp_baseline.csv     # Legacy baseline GDP (original 3-group model)
-│   └── pop_baseline.csv     # Legacy baseline population (original 3-group model)
+├── references/
+│   └── BurkeHsiangMiguel2015_Replication.zip   # BHM replication package
 ├── FACILITATION_GUIDE.md    # Instructor guide for classroom exercise
 └── README.md
 ```
 
-The `data/` CSV files are from the original 3-group version of the simulation and are retained as reference. The current 6-group model derives its parameters from the sources documented above.
+The `references/` directory contains the Burke, Hsiang & Miguel (2015) replication package used to derive temperature and damage parameters. All other parameters are embedded directly in the application JavaScript.
 
 ## Author
 
