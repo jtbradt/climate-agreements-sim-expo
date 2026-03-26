@@ -345,20 +345,41 @@
     <!-- Tab 3: Financial Summary -->
     <div class="tab-panel" id="tab-summary">
       <div class="card">
-        <div class="card-header">Net Financial Position by 2100</div>
-        <div class="card-body" style="align-items:stretch;">
+        <div class="card-header">
+          Financial Summary by 2100
+          <span style="flex:1"></span>
+          <button class="reset-btn" id="debriefToggle" title="Instructor: reveal NPV avoided damages for debrief discussion">Show Detailed Breakdown</button>
+        </div>
+        <div class="card-body" style="align-items:stretch; flex-direction:column; gap:1rem;">
           <table class="summary-table" id="summaryTable">
             <thead>
               <tr>
                 <th>Country</th>
-                <th class="num">Cumul. Abatement ($B)</th>
+                <th class="num">Abatement Cost ($B, NPV)</th>
                 <th class="num">Cumul. Transfers ($B)</th>
-                <th class="num">Climate Damages (% GDP/cap)</th>
-                <th class="num">Net Financial Cost ($B)</th>
+                <th class="num">Climate Damages (% GDP/cap, 2100)</th>
               </tr>
             </thead>
             <tbody id="summaryBody"></tbody>
           </table>
+          <!-- Hidden debrief table revealed by instructor -->
+          <div id="debriefPanel" style="display:none;">
+            <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:0.5rem; font-style:italic;">
+              NPV at 3% discount rate, 2024 US dollars. Avoided damages = BAU damages minus policy damages.
+            </div>
+            <table class="summary-table" id="debriefTable">
+              <thead>
+                <tr>
+                  <th>Country</th>
+                  <th class="num">Abatement Cost ($B, NPV)</th>
+                  <th class="num">Cumul. Transfers ($B)</th>
+                  <th class="num">Avoided Damages ($B, NPV)</th>
+                  <th class="num">Net Benefit ($B, NPV)</th>
+                </tr>
+              </thead>
+              <tbody id="debriefBody"></tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
@@ -437,6 +458,7 @@ const CONC_SLOPE = 0.0244625358530223;
 const BETA1 = 0.0127;
 const BETA2 = -0.0005;
 const TEMP_CAP = 30;
+const DISCOUNT_RATE = 0.03; // 3% annual discount rate for NPV calculations
 
 // ======================== SIMULATION ========================
 
@@ -496,11 +518,35 @@ function computeDamages(country, globalTemp) {
   return YEARS.map((_, i) => (gdpCC[i] - gdpNoCC[i]) / gdpNoCC[i]);
 }
 
+// Compute NPV of cumulative total dollar damages: sum over all years of (gdpNoCC - gdpCC) * population,
+// discounted at DISCOUNT_RATE. Returns value in $B. Positive = net loss from climate change.
+function computeCumulativeDollarDamages(country, globalTemp) {
+  const temp0 = globalTemp[0];
+  const gdpNoCC = new Array(N_YEARS);
+  const gdpCC = new Array(N_YEARS);
+  gdpNoCC[0] = gdpCC[0] = country.gdpCap0;
+  for (let i = 1; i < N_YEARS; i++) {
+    gdpNoCC[i] = gdpNoCC[i-1] * (1 + country.gdpGrowth);
+    const localDeltaT = (globalTemp[i] - temp0) * country.tconv;
+    const localTemp = country.baseTemp + localDeltaT;
+    const dmg = damageFunc(localTemp) - damageFunc(country.baseTemp);
+    gdpCC[i] = gdpCC[i-1] * (1 + country.gdpGrowth + dmg);
+  }
+  let cumDamages = 0;
+  for (let i = 0; i < N_YEARS; i++) {
+    const pop = country.pop0 * Math.pow(1 + country.popGrowth, i);
+    const discountFactor = Math.pow(1 + DISCOUNT_RATE, -i);
+    cumDamages += (gdpNoCC[i] - gdpCC[i]) * pop * discountFactor;
+  }
+  return cumDamages / 1e9; // convert to $B
+}
+
 function computeAbatementCosts(country, reductionYear, reductionRate) {
   const { c1, c2 } = country.costParams;
   const path = policyEmissions(country, reductionYear, reductionRate);
   const costs = new Array(N_YEARS).fill(0);
   const cumCosts = new Array(N_YEARS).fill(0);
+  const cumCostsDiscounted = new Array(N_YEARS).fill(0);
   for (let i = 0; i < N_YEARS; i++) {
     const y = BASE_YEAR + i;
     if (y >= reductionYear && reductionRate > 0) {
@@ -511,8 +557,10 @@ function computeAbatementCosts(country, reductionYear, reductionRate) {
       costs[i] = -mac * abated;
     }
     cumCosts[i] = (i > 0 ? cumCosts[i-1] : 0) + costs[i];
+    const discountFactor = Math.pow(1 + DISCOUNT_RATE, -i);
+    cumCostsDiscounted[i] = (i > 0 ? cumCostsDiscounted[i-1] : 0) + costs[i] * discountFactor;
   }
-  return cumCosts;
+  return { cumCosts, cumCostsDiscounted };
 }
 
 // ======================== TIMER ========================
@@ -894,40 +942,73 @@ function formatDollars(v) {
   return (v < 0 ? '-' : '') + '$' + s;
 }
 
+// Pre-compute BAU damages (fixed, used as reference for avoided damages in debrief)
+const bauDollarDamages = {};
+COUNTRY_DATA.forEach(c => {
+  bauDollarDamages[c.id] = computeCumulativeDollarDamages(c, bauTemp);
+});
+
+// Debrief toggle
+document.getElementById('debriefToggle').addEventListener('click', function() {
+  const panel = document.getElementById('debriefPanel');
+  const showing = panel.style.display !== 'none';
+  panel.style.display = showing ? 'none' : 'block';
+  this.textContent = showing ? 'Show Detailed Breakdown' : 'Hide Detailed Breakdown';
+});
+
 function updateSummaryTable(policies, policyTemp) {
   const tbody = document.getElementById('summaryBody');
-  let totalAbatement = 0, totalTransfers = 0, totalNet = 0;
+  const debriefBody = document.getElementById('debriefBody');
 
+  // Main table: abatement (discounted), transfers, % GDP/cap damages
   const rows = COUNTRY_DATA.map(c => {
     const p = policies[c.id];
-    const abateCosts = computeAbatementCosts(c, p.year, p.rate);
-    const abate2100 = abateCosts[N_YEARS - 1];
+    const { cumCostsDiscounted } = computeAbatementCosts(c, p.year, p.rate);
+    const abateNPV = cumCostsDiscounted[N_YEARS - 1];
     const cumTransfer = p.transfer * (END_YEAR - BASE_YEAR);
     const damages = computeDamages(c, policyTemp);
     const dmg2100 = damages[N_YEARS - 1];
-    const netCost = abate2100 + cumTransfer;
+    // Debrief: NPV avoided damages
+    const policyDollarDmg = computeCumulativeDollarDamages(c, policyTemp);
+    const avoidedDamages = bauDollarDamages[c.id] - policyDollarDmg;
+    const netBenefit = avoidedDamages - abateNPV - cumTransfer;
 
-    totalAbatement += abate2100;
-    totalTransfers += cumTransfer;
-    totalNet += netCost;
-
-    return { name: c.name, color: c.color, abate2100, cumTransfer, dmg2100, netCost };
+    return { name: c.name, color: c.color, abateNPV, cumTransfer, dmg2100, avoidedDamages, netBenefit };
   });
 
+  let totAbate = 0, totTransfer = 0, totAvoided = 0, totBenefit = 0;
+  rows.forEach(r => { totAbate += r.abateNPV; totTransfer += r.cumTransfer; totAvoided += r.avoidedDamages; totBenefit += r.netBenefit; });
+
+  // Main summary table (visible during negotiation)
   tbody.innerHTML = rows.map(r => `
     <tr>
       <td><div class="country-cell"><span class="country-dot" style="background:${r.color}"></span> ${r.name}</div></td>
-      <td class="num">${formatDollars(r.abate2100)}</td>
+      <td class="num">${formatDollars(r.abateNPV)}</td>
       <td class="num ${r.cumTransfer > 0.5 ? 'positive' : r.cumTransfer < -0.5 ? 'negative' : ''}">${formatDollars(r.cumTransfer)}</td>
       <td class="num ${r.dmg2100 < -0.001 ? 'positive' : r.dmg2100 > 0.001 ? 'negative' : ''}">${(r.dmg2100 * 100).toFixed(1)}%</td>
-      <td class="num ${r.netCost > 0.5 ? 'positive' : r.netCost < -0.5 ? 'negative' : ''}">${formatDollars(r.netCost)}</td>
     </tr>`).join('') + `
     <tr>
       <td><strong>Total</strong></td>
-      <td class="num">${formatDollars(totalAbatement)}</td>
-      <td class="num">${formatDollars(totalTransfers)}</td>
+      <td class="num">${formatDollars(totAbate)}</td>
+      <td class="num">${formatDollars(totTransfer)}</td>
       <td class="num">--</td>
-      <td class="num">${formatDollars(totalNet)}</td>
+    </tr>`;
+
+  // Debrief table (hidden until instructor reveals)
+  debriefBody.innerHTML = rows.map(r => `
+    <tr>
+      <td><div class="country-cell"><span class="country-dot" style="background:${r.color}"></span> ${r.name}</div></td>
+      <td class="num">${formatDollars(r.abateNPV)}</td>
+      <td class="num ${r.cumTransfer > 0.5 ? 'positive' : r.cumTransfer < -0.5 ? 'negative' : ''}">${formatDollars(r.cumTransfer)}</td>
+      <td class="num ${r.avoidedDamages > 0.5 ? 'negative' : r.avoidedDamages < -0.5 ? 'positive' : ''}">${formatDollars(r.avoidedDamages)}</td>
+      <td class="num ${r.netBenefit > 0.5 ? 'negative' : r.netBenefit < -0.5 ? 'positive' : ''}">${formatDollars(r.netBenefit)}</td>
+    </tr>`).join('') + `
+    <tr>
+      <td><strong>Total</strong></td>
+      <td class="num">${formatDollars(totAbate)}</td>
+      <td class="num">${formatDollars(totTransfer)}</td>
+      <td class="num">${formatDollars(totAvoided)}</td>
+      <td class="num">${formatDollars(totBenefit)}</td>
     </tr>`;
 }
 
@@ -987,12 +1068,12 @@ function updateAll() {
   });
   damagesChart.update();
 
-  // 4. Abatement costs
+  // 4. Abatement costs (chart shows undiscounted cumulative)
   const totalAbate = new Array(N_YEARS).fill(0);
   COUNTRY_DATA.forEach((c, ci) => {
-    const costs = computeAbatementCosts(c, policies[c.id].year, policies[c.id].rate);
-    abatementChart.data.datasets[ci].data = costs;
-    for (let i = 0; i < N_YEARS; i++) totalAbate[i] += costs[i];
+    const { cumCosts } = computeAbatementCosts(c, policies[c.id].year, policies[c.id].rate);
+    abatementChart.data.datasets[ci].data = cumCosts;
+    for (let i = 0; i < N_YEARS; i++) totalAbate[i] += cumCosts[i];
   });
   abatementChart.update();
 

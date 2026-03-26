@@ -163,11 +163,30 @@ where `A(t) = 1 - (1-r)^(years_since_start)` is the cumulative abatement fractio
 
 These parameters are pedagogical calibrations, not sourced from empirical marginal abatement cost curves.
 
+### Discounting
+
+All net present value (NPV) calculations in the Financial Summary use a **3% annual discount rate**, consistent with the US government's central rate for regulatory cost-benefit analysis. This applies to:
+
+- **Cumulative abatement costs (NPV):** Annual abatement spending is discounted back to the 2024 base year before summing.
+- **Avoided damages (NPV):** Cumulative dollar damages (per capita GDP loss × population, summed over all years) are discounted back to 2024, computed under both BAU and policy scenarios. Avoided damages = BAU damages − policy damages.
+
+The abatement cost **chart** shows undiscounted cumulative costs for visual clarity. The **Financial Summary table** reports discounted NPV values.
+
+Note: The Burke et al. damage function applies to GDP *growth rates*, which causes damages to compound over time. Combined with population growth, undiscounted cumulative damages can be very large. Discounting substantially reduces these figures but the magnitudes remain significant, particularly for hot, populous countries (India, Sub-Saharan Africa).
+
 ### Financial Transfers
 
 Each country group can set a net annual transfer in $B/yr. Positive values indicate payments into a climate fund; negative values indicate receipts. The tool displays whether transfers are balanced (sum to zero) across all groups.
 
 Transfers are tracked as a policy instrument for negotiation purposes. In the current version, they represent commitments that students must negotiate as part of the overall agreement.
+
+### Financial Summary
+
+The Financial Summary tab provides two views:
+
+1. **Default view** (visible during negotiation): Shows NPV abatement costs, cumulative transfers, and climate damages as % GDP per capita in 2100. The unit mismatch between dollar costs and percentage damages is intentional — it prevents students from trivially computing net benefits, preserving negotiation tension.
+
+2. **Detailed Breakdown** (hidden behind an instructor toggle): Reveals NPV avoided damages in $B and net benefit (avoided damages − abatement cost − transfers). Designed for use during the post-exercise debrief to illustrate the full cost-benefit picture and discuss why collective action was (or wasn't) worth it.
 
 ## Technical Details
 
@@ -182,7 +201,8 @@ The simulation runs entirely client-side as a single HTML file with no server de
 
 ```
 ├── docs/
-│   └── index.html          # Complete simulation app (single file)
+│   ├── index.html          # Complete simulation app (single file)
+│   └── slides.html         # Briefing slides for classroom projection (2 slides)
 ├── data/
 │   ├── BurkeHsiangMiguel2015_Replication.zip   # BHM replication package
 │   ├── co2_conc.csv         # Historical CO2 concentrations

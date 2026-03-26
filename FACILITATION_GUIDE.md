@@ -89,7 +89,7 @@ Use this time to motivate the exercise. Suggested structure:
 You (the instructor) operate the shared tool on the projector. Delegations negotiate among themselves and then submit their policy proposals to you. After each round, you enter all proposals into the tool so everyone can see the collective outcome.
 
 Each delegation controls three variables:
-- **Reduction Start Year** — When they begin cutting emissions (2015--2100)
+- **Reduction Start Year** — When they begin cutting emissions (2025--2100)
 - **Reduction Rate** — How fast they cut (%/year)
 - **Net Transfer** — How much they pay (+) or receive (-) in climate finance ($B/year)
 
@@ -230,7 +230,21 @@ This ensures every delegation meets at least two others, and the critical pairin
 
 ## Debrief (10--15 min)
 
-The debrief is where the deepest learning happens. Suggested questions:
+The debrief is where the deepest learning happens. Use the **"Show Detailed Breakdown"** button on the Financial Summary tab to reveal the full NPV analysis during this discussion.
+
+### The Reveal: Avoided Damages (5 min)
+
+Click **"Show Detailed Breakdown"** on the Financial Summary tab. This reveals a hidden table showing:
+- **Avoided Damages ($B, NPV)** — the dollar value of damages prevented by the negotiated policies vs. business-as-usual, discounted at 3%
+- **Net Benefit ($B, NPV)** — avoided damages minus abatement costs minus transfers
+
+Walk through the numbers:
+- "Let's look at what your agreement actually achieved in dollar terms."
+- "India's avoided damages are [X] — compare that to their abatement costs of [Y]. Was the deal worth it for them?"
+- "Now look at the global total. The collective benefit of action was [X]. The total cost was [Y]. The ratio is [X/Y to 1]."
+- "Were there deals on the table that would have made *everyone* better off? If so, why didn't they happen?"
+
+If no agreement was reached: show the BAU damage figures. "This is what inaction costs — and it falls disproportionately on the poorest countries."
 
 ### On Information and Strategy
 - "What did you know about other countries' situations? What did you assume?"
@@ -249,8 +263,9 @@ The debrief is where the deepest learning happens. Suggested questions:
 - "What's missing from this model that matters in reality?" (Good answers: domestic politics, technology uncertainty, adaptation, loss & damage, NDC ratchet mechanisms, trust/verification)
 - "Why is the Paris Agreement structured around voluntary pledges rather than binding targets? Did this exercise help you understand why?"
 
-### On the Model
+### On the Model and Discounting
 - "The Burke damage function assumes climate affects GDP *growth*, not just GDP levels. What does that mean for long-run damages?"
+- "We used a 3% discount rate to compute present values. What happens if you care more about future generations (lower rate)? What if you discount the future more heavily?"
 - "We assumed constant growth rates. How would slowing growth in China or accelerating growth in SSA change the dynamics?"
 
 ---

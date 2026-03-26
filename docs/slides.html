@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Climate Negotiations Simulation — Briefing</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: #0f172a; color: #f1f5f9;
+    }
+    .slide {
+      width: 100vw; height: 100vh;
+      display: none; flex-direction: column;
+      justify-content: center; padding: 5vw 7vw;
+    }
+    .slide.active { display: flex; }
+
+    h1 { font-size: 3.2rem; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 0.6em; line-height: 1.15; }
+    h2 { font-size: 2.2rem; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 0.8em; color: #60a5fa; }
+    .accent { color: #60a5fa; }
+    .warn { color: #fbbf24; }
+
+    p, li { font-size: 1.55rem; line-height: 1.6; color: #cbd5e1; }
+    ul { list-style: none; margin-left: 0; }
+    ul li { padding: 0.3em 0; padding-left: 1.5em; position: relative; }
+    ul li::before {
+      content: ''; position: absolute; left: 0; top: 0.65em;
+      width: 10px; height: 10px; border-radius: 50%; background: #60a5fa;
+    }
+
+    .country-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 1.2rem; margin-top: 0.5rem;
+    }
+    .country-card {
+      background: rgba(255,255,255,0.06); border-radius: 12px;
+      padding: 1.1rem 1.3rem; border-left: 4px solid;
+    }
+    .country-card h3 { font-size: 1.3rem; font-weight: 700; margin-bottom: 0.2rem; }
+    .country-card p { font-size: 1rem; color: #94a3b8; line-height: 1.4; }
+
+    .controls-row {
+      display: flex; gap: 2rem; margin-top: 1.5rem;
+    }
+    .control-box {
+      flex: 1; background: rgba(255,255,255,0.05); border-radius: 12px;
+      padding: 1.3rem 1.5rem; text-align: center;
+    }
+    .control-box .num { font-size: 2.2rem; font-weight: 800; color: #60a5fa; }
+    .control-box .label { font-size: 1.1rem; color: #94a3b8; margin-top: 0.2rem; }
+
+    .rounds {
+      display: flex; gap: 1.5rem; margin-top: 1rem;
+    }
+    .round-box {
+      flex: 1; background: rgba(255,255,255,0.05); border-radius: 12px;
+      padding: 1.2rem 1.4rem; border-top: 3px solid #60a5fa;
+    }
+    .round-box h3 { font-size: 1.2rem; font-weight: 700; color: #f1f5f9; margin-bottom: 0.3rem; }
+    .round-box p { font-size: 0.95rem; color: #94a3b8; line-height: 1.45; }
+    .round-box .time { font-size: 0.85rem; color: #fbbf24; font-weight: 600; margin-top: 0.4rem; }
+
+    .rules { margin-top: 1.5rem; }
+    .rules li { font-size: 1.2rem; padding: 0.25em 0; }
+    .rules li::before { background: #fbbf24; width: 8px; height: 8px; top: 0.6em; }
+
+    /* Navigation */
+    .nav {
+      position: fixed; bottom: 2rem; right: 3rem;
+      display: flex; gap: 0.75rem; z-index: 10;
+    }
+    .nav button {
+      width: 48px; height: 48px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.08); color: #f1f5f9; font-size: 1.3rem;
+      cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center;
+    }
+    .nav button:hover { background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.4); }
+    .slide-counter {
+      position: fixed; bottom: 2.4rem; left: 3rem;
+      font-size: 0.9rem; color: #475569;
+    }
+  </style>
+</head>
+<body>
+
+<!-- SLIDE 1: Setup -->
+<div class="slide active" id="slide1">
+  <h1>Climate Negotiations <span class="accent">Simulation</span></h1>
+  <p style="font-size:1.4rem; margin-bottom: 1.5rem;">You represent one of <strong>6 delegations</strong> at a UNFCCC Conference of the Parties. Your goal: negotiate a global climate agreement.</p>
+
+  <div class="country-grid">
+    <div class="country-card" style="border-color: #3b82f6;">
+      <h3 style="color:#3b82f6">United States</h3>
+      <p>High income, high emissions, low climate damages</p>
+    </div>
+    <div class="country-card" style="border-color: #8b5cf6;">
+      <h3 style="color:#8b5cf6">European Union</h3>
+      <p>High income, declining emissions, low climate damages</p>
+    </div>
+    <div class="country-card" style="border-color: #e11d48;">
+      <h3 style="color:#e11d48">China</h3>
+      <p>Largest total emitter, rapid economic growth</p>
+    </div>
+    <div class="country-card" style="border-color: #f59e0b;">
+      <h3 style="color:#f59e0b">India</h3>
+      <p>Low income, growing emissions, high climate damages</p>
+    </div>
+    <div class="country-card" style="border-color: #22c55e;">
+      <h3 style="color:#22c55e">Sub-Saharan Africa</h3>
+      <p>Lowest income, negligible emissions, highest climate damages</p>
+    </div>
+    <div class="country-card" style="border-color: #64748b;">
+      <h3 style="color:#64748b">Oil States</h3>
+      <p>Economy depends on fossil fuels, highest transition costs</p>
+    </div>
+  </div>
+
+  <div class="controls-row">
+    <div class="control-box">
+      <div class="num">2015--2100</div>
+      <div class="label">Reduction Start Year</div>
+    </div>
+    <div class="control-box">
+      <div class="num">0--20%</div>
+      <div class="label">Reduction Rate / yr</div>
+    </div>
+    <div class="control-box">
+      <div class="num">+/- $B</div>
+      <div class="label">Net Transfer / yr</div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 2: Rounds & Rules -->
+<div class="slide" id="slide2">
+  <h2>How It Works</h2>
+
+  <div class="rounds">
+    <div class="round-box">
+      <h3>Round 1: Opening Plenary</h3>
+      <p>Review your briefing sheet. Prepare an opening offer. Each chief negotiator presents to the room.</p>
+      <div class="time">5 min prep + 5 min speeches</div>
+    </div>
+    <div class="round-box">
+      <h3>Round 2: Bilateral Talks</h3>
+      <p>Structured bilateral meetings. Negotiate side deals. Revise your offer based on what you learn.</p>
+      <div class="time">12--15 min</div>
+    </div>
+    <div class="round-box">
+      <h3>Round 3: Final Plenary</h3>
+      <p>Last chance to close a deal. Final offers are entered. Can this body deliver?</p>
+      <div class="time">8--10 min</div>
+    </div>
+  </div>
+
+  <div class="rules">
+    <h2 style="margin-top:1rem;">Ground Rules</h2>
+    <ul>
+      <li>Only <strong>chief negotiators</strong> speak in plenary. Advisors pass notes.</li>
+      <li>Your <span class="warn">briefing sheet is confidential</span>. Share strategically — you don't have to be truthful.</li>
+      <li>Transfers must balance: total in = total out. <span style="color:#94a3b8;">(The tool will warn you if not.)</span></li>
+      <li>There is <strong>no enforcement</strong>. Agreements are voluntary — just like real COPs.</li>
+      <li>When the timer hits zero, <strong>submit your offer sheet</strong> — whatever is on it is your position.</li>
+    </ul>
+  </div>
+</div>
+
+<div class="nav">
+  <button id="prevBtn" onclick="navigate(-1)">&larr;</button>
+  <button id="nextBtn" onclick="navigate(1)">&rarr;</button>
+</div>
+<div class="slide-counter"><span id="current">1</span> / <span id="total">2</span></div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  let current = 0;
+
+  function navigate(dir) {
+    slides[current].classList.remove('active');
+    current = Math.max(0, Math.min(slides.length - 1, current + dir));
+    slides[current].classList.add('active');
+    document.getElementById('current').textContent = current + 1;
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); navigate(1); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); navigate(-1); }
+  });
+</script>
+</body>
+</html>
